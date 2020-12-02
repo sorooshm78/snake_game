@@ -35,6 +35,16 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 		page[i][lenght - 1] = margins;
 }
 
+void initialize_snake_in_page(vector<vector<string>>& page, string& snake, int snake_size)
+{
+	int y = page[0].size() / 2;
+	int x = page.size() / 2;
+	// snake head
+	page[x][y] = "<";
+	for(int i = 1; i < snake_size ; i++)
+		page[x][y + i] = snake;
+}
+
 void print_page(vector<vector<string>>& page)
 {
 	for(int i = 0; i < page.size(); i++)
@@ -52,11 +62,14 @@ int main()
 	// Confegur setting
 	int length_page = 30;
 	int width_page = 20;
-	string page_inside = ".";
+	string page_inside = " ";
 	string page_margins = "#";
+	string snake = "-";
+	int snake_size = 5;
 	vector <vector<string>> page;
 
 	initialize_page(page, length_page, width_page, page_inside);
 	initialize_margins_page(page, page_margins);
+	initialize_snake_in_page(page, snake, snake_size);
 	print_page(page);
 }
