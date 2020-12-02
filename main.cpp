@@ -65,9 +65,9 @@ void initialize_food_in_page(vector<vector<string>>& page, string& inside, strin
 
 void print_page(vector<vector<string>>& page)
 {
-	for(int i = 0; i < page.size(); i++)
+	for(size_t i = 0; i < page.size(); i++)
 	{
-		for(int j = 0; j < page[i].size(); j++)
+		for(size_t j = 0; j < page[i].size(); j++)
 		{	
 			cout << page[i][j] << " " ;
 		}
