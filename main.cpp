@@ -4,44 +4,44 @@
 
 using namespace std;
 
-void initialize_page(vector<vector<string>>& point, int lenght, int width, string& inside)
+void initialize_page(vector<vector<string>>& page, int lenght, int width, string& inside)
 {
 	vector <string> x_page(lenght, inside);
 	for(int i = 0; i < width; i++)
 	{
-		point.push_back(x_page);
+		page.push_back(x_page);
 	}
 }
 
-void initialize_margins_page(vector<vector<string>>& point, string& margins)
+void initialize_margins_page(vector<vector<string>>& page, string& margins)
 {
-	int width = point.size();
-	int lenght = point[0].size();
+	int width = page.size();
+	int lenght = page[0].size();
 
 	// up margins	
 	for(int i = 0; i < lenght; i++)
-		point[0][i] = margins;
+		page[0][i] = margins;
 
 	// down margins
 	for(int i = 0; i < lenght; i++)
-		point[width - 1][i] = margins;
+		page[width - 1][i] = margins;
 
 	// right margins
 	for(int i = 0; i < width; i++)
-		point[i][0] = margins;			
+		page[i][0] = margins;			
 
 	// left margins
 	for(int i = 0; i < width; i++)
-		point[i][lenght - 1] = margins;
+		page[i][lenght - 1] = margins;
 }
 
-void print_page(vector<vector<string>>& point)
+void print_page(vector<vector<string>>& page)
 {
-	for(int i = 0; i < point.size(); i++)
+	for(int i = 0; i < page.size(); i++)
 	{
-		for(int j = 0; j < point[i].size(); j++)
+		for(int j = 0; j < page[i].size(); j++)
 		{	
-			cout << point[i][j] << " " ;
+			cout << page[i][j] << " " ;
 		}
 		cout << endl;
 	}
