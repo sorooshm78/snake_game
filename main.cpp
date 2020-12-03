@@ -78,12 +78,24 @@ void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
- 
-	if(move_type == "left")
-	{
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
-	}
 	
+	// Snake move to left 
+	if(move_type == "left")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
+	
+	// Snake move to right 
+	if(move_type == "right")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
+
+	// Snake move to up
+	if(move_type == "up")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
+
+	// Snake move to down 
+	if(move_type == "down")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
+
+	snake_coordinates.pop_back();	
 }
 
 void clear_page_from_snake(vector<vector<string>>& page, string& inside, string& snake)
@@ -96,7 +108,6 @@ void clear_page_from_snake(vector<vector<string>>& page, string& inside, string&
 				page[i][j] = inside;
 		}
 	}
-
 }
 
 void clear_page_from_food(vector<vector<string>>& page, string& inside, string& food)
@@ -131,7 +142,7 @@ int main()
 	// Confegur setting
 	vector<pair<int, int>> snake_coordinates;
 	vector<vector<string>> page;
-	string move_type = "left"; 
+	string move_type = "down"; 
 	string margins = "#";
 	string inside = ".";
 	string snake = "+";
