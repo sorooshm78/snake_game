@@ -37,13 +37,16 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 		page[i][lenght - 1] = margins;
 }
 
-void initialize_snake_in_page(vector<vector<string>>& page, string& snake, int snake_size)
+void initialize_snake_in_page(vector<vector<string>>& page,vector<pair<int, int>>& snake_coordinates, string& snake, int snake_size)
 {
 	int x_snake = page[0].size() / 2;
 	int y_snake = page.size() / 2;
 
-	for(int i = 1; i < snake_size ; i++)
+	for(int i = 0; i < snake_size ; i++)
+	{
+		snake_coordinates.push_back(pair<int, int>(y_snake, x_snake + i));
 		page[y_snake][x_snake + i] = snake;
+	}
 }
 
 void initialize_food_in_page(vector<vector<string>>& page, string& inside, string& food)
@@ -59,6 +62,51 @@ void initialize_food_in_page(vector<vector<string>>& page, string& inside, strin
 		{	
 			page[y_food][x_food] = food;
 			return;
+		}
+	}
+}
+
+void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates, string& snake)
+{
+	for(size_t i = 0; i < snake_coordinates.size(); i++)
+	{
+		page[snake_coordinates[i].first][snake_coordinates[i].second] = snake;
+	}
+}
+
+void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
+{
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
+ 
+	if(move_type == "left")
+	{
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
+	}
+	
+}
+
+void clear_page_from_snake(vector<vector<string>>& page, string& inside, string& snake)
+{
+	for(size_t i = 0; i < page.size(); i++)
+	{
+		for(size_t j = 0; j < page[i].size(); j++)
+		{	
+			if(page[i][j] == snake)
+				page[i][j] = inside;
+		}
+	}
+
+}
+
+void clear_page_from_food(vector<vector<string>>& page, string& inside, string& food)
+{
+	for(size_t i = 0; i < page.size(); i++)
+	{
+		for(size_t j = 0; j < page[i].size(); j++)
+		{	
+			if(page[i][j] == food)
+				page[i][j] = inside;
 		}
 	}
 }
@@ -81,18 +129,25 @@ int main()
 	srand(time(0));
 
 	// Confegur setting
-	vector <vector<string>> page;
+	vector<pair<int, int>> snake_coordinates;
+	vector<vector<string>> page;
+	string move_type = "left"; 
 	string margins = "#";
-	string inside = " ";
-	string snake = ">";
+	string inside = ".";
+	string snake = "+";
 	string food = "*";
 	int length_page = 30;
 	int width_page = 20;
-	int snake_size = 5;
+	int snake_size = 3;
 
 	initialize_page(page, length_page, width_page, inside);
 	initialize_margins_page(page, margins);
-	initialize_snake_in_page(page, snake, snake_size);
+	initialize_snake_in_page(page, snake_coordinates, snake, snake_size);
 	initialize_food_in_page(page, inside, food);
+
+	print_page(page);
+	clear_page_from_snake(page, inside, snake);
+	move(snake_coordinates, move_type);
+	insert_snake_in_page(page, snake_coordinates, snake);
 	print_page(page);
 }
