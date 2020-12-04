@@ -75,7 +75,7 @@ void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& 
 	}
 }
 
-void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
+void move(vector<pair<int, int>>& snake_coordinates, string move_type)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -123,8 +123,9 @@ void clear_page_from_food(vector<vector<string>>& page, string& inside, string& 
 	}
 }
 
-void print_page(vector<vector<string>>& page)
+void print_page(vector<vector<string>>& page, int& score)
 {
+	cout << "score : " << score << endl;
 	for(size_t i = 0; i < page.size(); i++)
 	{
 		for(size_t j = 0; j < page[i].size(); j++)
@@ -133,6 +134,24 @@ void print_page(vector<vector<string>>& page)
 		}
 		cout << endl;
 	}
+}
+
+bool check_eat_food(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
+{
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
+
+	for(size_t i = 0; i < food_coordinates.size(); i++)
+	{ 
+		if(food_coordinates[i].first ==  y_head_snake and food_coordinates[i].second ==  x_head_snake)
+			return true;
+	}
+	return false;
+}
+
+void add_score(int& score, int value)
+{
+	score += value;
 }
 
 int main()
@@ -152,15 +171,25 @@ int main()
 	int length_page = 30;
 	int width_page = 20;
 	int snake_size = 3;
+	int score = 0;
 
 	initialize_page(page, length_page, width_page, inside);
 	initialize_margins_page(page, margins);
 	initialize_snake_in_page(page, snake_coordinates, snake, snake_size);
 	insert_food_in_page(page, food_coordinates, inside, food);
 
-	print_page(page);
+	print_page(page, score);
 	clear_page_from_snake(page, inside, snake);
 	move(snake_coordinates, move_type);
+	move(snake_coordinates, move_type);
+	move(snake_coordinates, "up");
+	move(snake_coordinates, "up");
+	move(snake_coordinates, "up");
+	move(snake_coordinates, "up");
+
+	if(check_eat_food(snake_coordinates, food_coordinates))
+		add_score(score, 1);
+
 	insert_snake_in_page(page, snake_coordinates, snake);
-	print_page(page);
+	print_page(page, score);
 }
