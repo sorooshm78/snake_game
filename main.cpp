@@ -136,7 +136,7 @@ void print_page(vector<vector<string>>& page, int& score)
 	}
 }
 
-bool check_eat_food(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
+bool check_trade_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -152,6 +152,19 @@ bool check_eat_food(vector<pair<int, int>>& snake_coordinates, vector<pair<int, 
 void add_score(int& score, int value)
 {
 	score += value;
+}
+
+bool check_game_over(vector<pair<int, int>>& snake_coordinates)
+{
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
+
+	for(size_t i = 1; i < snake_coordinates.size(); i++)
+	{
+		if(y_head_snake == snake_coordinates[i].first and x_head_snake == snake_coordinates[i].second)
+			return true;
+	}
+	return false;
 }
 
 int main()
@@ -170,7 +183,7 @@ int main()
 	string food = "*";
 	int length_page = 30;
 	int width_page = 20;
-	int snake_size = 3;
+	int snake_size = 5;
 	int score = 0;
 
 	initialize_page(page, length_page, width_page, inside);
@@ -181,15 +194,13 @@ int main()
 	print_page(page, score);
 	clear_page_from_snake(page, inside, snake);
 	move(snake_coordinates, move_type);
-	move(snake_coordinates, move_type);
-	move(snake_coordinates, "up");
-	move(snake_coordinates, "up");
-	move(snake_coordinates, "up");
-	move(snake_coordinates, "up");
-
-	if(check_eat_food(snake_coordinates, food_coordinates))
+	if(check_game_over(snake_coordinates))
+	{
+		cout << "you are is game over!!!" << endl;
+		return 0;
+	}
+	if(check_trade_score(snake_coordinates, food_coordinates))
 		add_score(score, 1);
-
 	insert_snake_in_page(page, snake_coordinates, snake);
 	print_page(page, score);
 }
