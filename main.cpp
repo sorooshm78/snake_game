@@ -49,7 +49,7 @@ void initialize_snake_in_page(vector<vector<string>>& page,vector<pair<int, int>
 	}
 }
 
-void initialize_food_in_page(vector<vector<string>>& page, string& inside, string& food)
+void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& food_coordinates, string& inside, string& food)
 {
 	int lenght = page[0].size();
 	int width = page.size();
@@ -61,6 +61,7 @@ void initialize_food_in_page(vector<vector<string>>& page, string& inside, strin
 		if(page[y_food][x_food] == inside)
 		{	
 			page[y_food][x_food] = food;
+			food_coordinates.push_back(pair<int, int>(y_food, x_food));
 			return;
 		}
 	}
@@ -137,12 +138,13 @@ void print_page(vector<vector<string>>& page)
 int main()
 {
 	// Srand
-	srand(time(0));
+	//srand(time(0));
 
 	// Confegur setting
 	vector<pair<int, int>> snake_coordinates;
+	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
-	string move_type = "down"; 
+	string move_type = "left"; 
 	string margins = "#";
 	string inside = ".";
 	string snake = "+";
@@ -154,7 +156,7 @@ int main()
 	initialize_page(page, length_page, width_page, inside);
 	initialize_margins_page(page, margins);
 	initialize_snake_in_page(page, snake_coordinates, snake, snake_size);
-	initialize_food_in_page(page, inside, food);
+	insert_food_in_page(page, food_coordinates, inside, food);
 
 	print_page(page);
 	clear_page_from_snake(page, inside, snake);
