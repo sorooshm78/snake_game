@@ -53,7 +53,7 @@ void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& f
 {
 	int lenght = page[0].size();
 	int width = page.size();
-
+	
 	for(int i = 0; i < count_food ;i++) 
 	{
 		while(true)
@@ -64,7 +64,7 @@ void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& f
 			{	
 				page[y_food][x_food] = food;
 				food_coordinates.push_back(pair<int, int>(y_food, x_food));
-				return;
+				break;
 			}
 		}
 	}
@@ -240,6 +240,7 @@ int main()
 	string snake = "+";
 	string food = "*";
 	int length_page = 30;
+	int value_score = 1;
 	int width_page = 20;
  	int count_food = 1;
 	int snake_size = 5;
@@ -271,8 +272,8 @@ int main()
 
 		if(check_get_score(snake_coordinates, food_coordinates))
 		{
-			add_score(score, 1);
-			insert_food_in_page(page, food_coordinates, inside, food, count_food);
+			add_score(score, value_score);
+			insert_food_in_page(page, food_coordinates, inside, food, 1);
 		}
 		else
 			cut_snake_tail(snake_coordinates);
