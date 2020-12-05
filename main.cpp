@@ -95,8 +95,6 @@ void move(vector<pair<int, int>>& snake_coordinates, string move_type)
 	// Snake move to down 
 	if(move_type == "down")
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
-
-	snake_coordinates.pop_back();	
 }
 
 void clear_page_from_snake(vector<vector<string>>& page, string& inside, string& snake)
@@ -136,7 +134,7 @@ void print_page(vector<vector<string>>& page, int& score)
 	}
 }
 
-bool check_trade_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
+bool check_get_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -144,7 +142,10 @@ bool check_trade_score(vector<pair<int, int>>& snake_coordinates, vector<pair<in
 	for(size_t i = 0; i < food_coordinates.size(); i++)
 	{ 
 		if(food_coordinates[i].first ==  y_head_snake and food_coordinates[i].second ==  x_head_snake)
-			return true;
+		{
+			food_coordinates.erase(food_coordinates.begin() + i);	
+			return true;	
+		}
 	}
 	return false;
 }
@@ -165,6 +166,58 @@ bool check_game_over(vector<pair<int, int>>& snake_coordinates)
 			return true;
 	}
 	return false;
+}
+
+void change_move_type(string& move_type, string input)
+{
+	if(input == "w")
+		move_type = "up";
+
+	if(input == "s")
+		move_type = "down";
+
+	if(input == "a")
+		move_type = "left";
+
+	if(input == "d")
+		move_type = "right";
+}
+
+void crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
+{
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
+
+	int margins_up = 0;
+	int margins_down = page.size() - 1;
+	int margins_left = 0;
+	int margins_right = page[0].size() - 1;
+
+	// Wall left
+	if(x_head_snake == margins_left)
+		 snake_coordinates[0].second = margins_right - 1;
+
+	// Wall right
+	if(x_head_snake == margins_right)
+		 snake_coordinates[0].second = margins_left + 1;
+	
+	// Wall up
+	if(y_head_snake == margins_up)
+		 snake_coordinates[0].first = margins_down - 1;
+
+	// Wall down
+	if(y_head_snake == margins_down)
+		 snake_coordinates[0].first = margins_up + 1;
+}
+
+void message_game_over()
+{
+	cout << "you are is game over!!!" << endl;
+}
+
+void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
+{
+	snake_coordinates.pop_back();	
 }
 
 int main()
@@ -190,17 +243,33 @@ int main()
 	initialize_margins_page(page, margins);
 	initialize_snake_in_page(page, snake_coordinates, snake, snake_size);
 	insert_food_in_page(page, food_coordinates, inside, food);
-
+	
 	print_page(page, score);
-	clear_page_from_snake(page, inside, snake);
-	move(snake_coordinates, move_type);
-	if(check_game_over(snake_coordinates))
+	string input = "a";
+	
+	while(true)
 	{
-		cout << "you are is game over!!!" << endl;
-		return 0;
+		cin >> input;
+		change_move_type(move_type, input);
+		clear_page_from_snake(page, inside, snake);
+		move(snake_coordinates, move_type);
+		crash_wall(page, snake_coordinates);
+
+		if(check_game_over(snake_coordinates))
+		{
+			message_game_over();
+			return 0;
+		}
+
+		if(check_get_score(snake_coordinates, food_coordinates))
+		{
+			add_score(score, 1);
+			insert_food_in_page(page, food_coordinates, inside, food);
+		}
+		else
+			cut_snake_tail(snake_coordinates);
+
+		insert_snake_in_page(page, snake_coordinates, snake);
+		print_page(page, score);
 	}
-	if(check_trade_score(snake_coordinates, food_coordinates))
-		add_score(score, 1);
-	insert_snake_in_page(page, snake_coordinates, snake);
-	print_page(page, score);
 }
