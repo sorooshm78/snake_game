@@ -39,30 +39,33 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 
 void initialize_snake_in_page(vector<vector<string>>& page,vector<pair<int, int>>& snake_coordinates, string& snake, int snake_size)
 {
-	int x_snake = page[0].size() / 2;
-	int y_snake = page.size() / 2;
+	int x_head_snake = page[0].size() / 2;
+	int y_head_snake = page.size() / 2;
 
 	for(int i = 0; i < snake_size ; i++)
 	{
-		snake_coordinates.push_back(pair<int, int>(y_snake, x_snake + i));
-		page[y_snake][x_snake + i] = snake;
+		snake_coordinates.push_back(pair<int, int>(y_head_snake, x_head_snake + i));
+		page[y_head_snake][x_head_snake + i] = snake;
 	}
 }
 
-void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& food_coordinates, string& inside, string& food)
+void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& food_coordinates, string& inside, string& food, int count_food)
 {
 	int lenght = page[0].size();
 	int width = page.size();
 
-	while(true)
-	{	
-		int x_food = rand() % lenght;
-		int y_food = rand() % width;
-		if(page[y_food][x_food] == inside)
+	for(int i = 0; i < count_food ;i++) 
+	{
+		while(true)
 		{	
-			page[y_food][x_food] = food;
-			food_coordinates.push_back(pair<int, int>(y_food, x_food));
-			return;
+			int x_food = rand() % lenght;
+			int y_food = rand() % width;
+			if(page[y_food][x_food] == inside)
+			{	
+				page[y_food][x_food] = food;
+				food_coordinates.push_back(pair<int, int>(y_food, x_food));
+				return;
+			}
 		}
 	}
 }
@@ -143,6 +146,7 @@ bool check_get_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int,
 	{ 
 		if(food_coordinates[i].first ==  y_head_snake and food_coordinates[i].second ==  x_head_snake)
 		{
+			// Delete food from coordinates
 			food_coordinates.erase(food_coordinates.begin() + i);	
 			return true;	
 		}
@@ -168,22 +172,22 @@ bool check_game_over(vector<pair<int, int>>& snake_coordinates)
 	return false;
 }
 
-void change_move_type(string& move_type, string input)
+void change_move_type(string& move_type, string input_move_type)
 {
-	if(input == "w")
+	if(input_move_type == "w")
 		move_type = "up";
 
-	if(input == "s")
+	if(input_move_type == "s")
 		move_type = "down";
 
-	if(input == "a")
+	if(input_move_type == "a")
 		move_type = "left";
 
-	if(input == "d")
+	if(input_move_type == "d")
 		move_type = "right";
 }
 
-void crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
+void check_and_handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -223,12 +227,13 @@ void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
 int main()
 {
 	// Srand
-	//srand(time(0));
+	srand(time(0));
 
 	// Confegur setting
 	vector<pair<int, int>> snake_coordinates;
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
+	string input_move_type = "a"; // Left
 	string move_type = "left"; 
 	string margins = "#";
 	string inside = ".";
@@ -236,24 +241,27 @@ int main()
 	string food = "*";
 	int length_page = 30;
 	int width_page = 20;
+ 	int count_food = 1;
 	int snake_size = 5;
 	int score = 0;
 
+	// Initialize Primitive Game Page
 	initialize_page(page, length_page, width_page, inside);
 	initialize_margins_page(page, margins);
 	initialize_snake_in_page(page, snake_coordinates, snake, snake_size);
-	insert_food_in_page(page, food_coordinates, inside, food);
+	insert_food_in_page(page, food_coordinates, inside, food, count_food);
 	
+	// Primitive Print
 	print_page(page, score);
-	string input = "a";
 	
+	// Every time snake move
 	while(true)
 	{
-		cin >> input;
-		change_move_type(move_type, input);
+		cin >> input_move_type;
+		change_move_type(move_type, input_move_type);
 		clear_page_from_snake(page, inside, snake);
 		move(snake_coordinates, move_type);
-		crash_wall(page, snake_coordinates);
+		check_and_handle_crash_wall(page, snake_coordinates);
 
 		if(check_game_over(snake_coordinates))
 		{
@@ -264,7 +272,7 @@ int main()
 		if(check_get_score(snake_coordinates, food_coordinates))
 		{
 			add_score(score, 1);
-			insert_food_in_page(page, food_coordinates, inside, food);
+			insert_food_in_page(page, food_coordinates, inside, food, count_food);
 		}
 		else
 			cut_snake_tail(snake_coordinates);
