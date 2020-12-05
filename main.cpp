@@ -126,6 +126,7 @@ void clear_page_from_food(vector<vector<string>>& page, string& inside, string& 
 
 void print_page(vector<vector<string>>& page, int& score)
 {
+	system("clear");
 	cout << "score : " << score << endl;
 	for(size_t i = 0; i < page.size(); i++)
 	{
@@ -187,7 +188,7 @@ void change_move_type(string& move_type, string input_move_type)
 		move_type = "right";
 }
 
-void check_and_handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
+void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -262,7 +263,7 @@ int main()
 		change_move_type(move_type, input_move_type);
 		clear_page_from_snake(page, inside, snake);
 		move(snake_coordinates, move_type);
-		check_and_handle_crash_wall(page, snake_coordinates);
+		handle_crash_wall(page, snake_coordinates);
 
 		if(check_game_over(snake_coordinates))
 		{
