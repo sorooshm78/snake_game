@@ -1,5 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
+#include <chrono>
+#include <thread>
 #include <string>
 #include <vector>
 #include <time.h>
@@ -259,6 +262,8 @@ int main()
 	// Every time snake move
 	while(true)
 	{
+		//sleep(1);
+		this_thread::sleep_for(std::chrono::milliseconds(500));
 		cin >> input_move_type;
 		change_move_type(move_type, input_move_type);
 		clear_page_from_snake(page, inside, snake);
