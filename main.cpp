@@ -225,6 +225,34 @@ void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
 	snake_coordinates.pop_back();	
 }
 
+bool check_correct_input_move_type(string& move_type, string& input_move_type)
+{
+	if(move_type == "left" and input_move_type == "d")
+	{	
+		move_type == "left";
+		return false;
+	}
+	
+	if(move_type == "right" and input_move_type == "a")
+	{	
+		move_type == "right";
+		return false;
+	}
+
+	if(move_type == "up" and input_move_type == "s")
+	{	
+		move_type == "up";
+		return false;
+	}
+	
+	if(move_type == "down" and input_move_type == "w")
+	{
+		move_type == "down";
+		return false;
+	}
+	return true;
+}
+
 int main()
 {
 	// Srand
@@ -260,7 +288,8 @@ int main()
 	while(true)
 	{	
 		cin >> input_move_type;
-		change_move_type(move_type, input_move_type);
+		if(check_correct_input_move_type(move_type, input_move_type))
+			change_move_type(move_type, input_move_type);
 		clear_page_from_snake(page, inside, snake);
 		move(snake_coordinates, move_type);
 		handle_crash_wall(page, snake_coordinates);
