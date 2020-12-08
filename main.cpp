@@ -1,4 +1,6 @@
 #include <iostream>
+#include <thread>
+#include <chrono>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -241,6 +243,8 @@ void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
 	snake_coordinates.pop_back();	
 }
 
+string move_type = "left"; 
+
 // Check correct input move type
 bool check_correct_input_move_type(string& move_type, string& input_move_type)
 {
@@ -270,19 +274,34 @@ bool check_correct_input_move_type(string& move_type, string& input_move_type)
 	return true;
 }
 
+void read_input()
+{
+	string input_move_type = "a"; // Left
+
+	while (true)
+	{	
+		// Get input move type
+		cin >> input_move_type;
+
+		cout << "Read this: " << input_move_type << endl;
+			
+		// Check correct input and if correct moved
+		if(check_correct_input_move_type(move_type, input_move_type))
+			change_move_type(move_type, input_move_type);
+	}
+}
+
 int main()
 {
 	// Srand
 	srand(time(0));
 
-	// Confegur setting snake game
+	// Configure setting snake game
 	vector<pair<int, int>> snake_coordinates;
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
-	string input_move_type = "a"; // Left
-	string move_type = "left"; 
 	string margins = "#";
-	string inside = ".";
+	string inside = ".";// TODO: change name to 'empty'
 	string snake = "+";
 	string food = "*";
 	int length_page = 30;
@@ -300,17 +319,14 @@ int main()
 	
 	// Primitive Print
 	print_page(page, score);
+
+	thread read_input_thread(read_input);
 	
 	// Every time snake move
 	while(true)
-	{	
-		// Get input move type
-		cin >> input_move_type;
-		
-		// Check correct input and if correct moved
-		if(check_correct_input_move_type(move_type, input_move_type))
-			change_move_type(move_type, input_move_type);
-
+	{
+		this_thread::sleep_for(chrono::seconds(1));
+	
 		// Clear snake in maxrix game page
 		clear_page_from_snake(page, inside, snake);
 	
@@ -343,5 +359,7 @@ int main()
 		
 		// Print martix game page
 		print_page(page, score);
+
+
 	}
 }
