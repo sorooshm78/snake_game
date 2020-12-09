@@ -7,6 +7,7 @@
 #include <time.h>
 #include <iostream>
 #include <termios.h>
+#include <atomic>
 
 #define STDIN_FILENO 0
 
@@ -328,9 +329,9 @@ bool check_correct_input_move_type_player2(string& move_type, char input_move_ty
 	return true;
 }
 
-void read_input_player1(string& move_type)
+void read_input_player1(string& move_type, atomic<bool>& game_over)
 {
-	while (true)
+	while (!game_over)
 	{	
 		// Black magic to prevent Linux from buffering keystrokes.
 		struct termios t;
@@ -381,6 +382,7 @@ int main()
 	srand(time(0));
 
 	// Configure setting snake game
+	atomic<bool> game_over { false } ;
 	vector<pair<int, int>> snake_coordinates_player1;
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
@@ -405,7 +407,7 @@ int main()
 	// Primitive Print
 	print_page(page, score_player1);
 
-	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1));
+	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(game_over));
 	
 	// Every time snake move
 	while(true)
@@ -425,7 +427,9 @@ int main()
 		if(check_game_over(snake_coordinates_player1))
 		{
 			message_game_over();
-			thread_for_read_input_player1.detach();
+			game_over = true;
+			//thread_for_read_input_player1.detach();	
+			thread_for_read_input_player1.join();	
 			return 0;
 		}
 
