@@ -260,6 +260,7 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 // Show game over message
 void message_game_over()
 {
+	cout << endl;
 	cout << "you are is game over!!!" << endl;
 }
 
@@ -424,6 +425,7 @@ int main()
 		if(check_game_over(snake_coordinates_player1))
 		{
 			message_game_over();
+			thread_for_read_input_player1.detach();
 			return 0;
 		}
 
