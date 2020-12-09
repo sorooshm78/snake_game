@@ -408,14 +408,11 @@ int main()
 	print_page(page, score_player1);
 
 	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(game_over));
-//	thread thread_for_read_input_player2(read_input_player2, ref(move_type_player1));
 
-
-	
 	// Every time snake move
 	while(true)
 	{
-		this_thread::sleep_for(chrono::milliseconds(100));
+		this_thread::sleep_for(chrono::milliseconds(1000));
 	
 		// Clear snake in maxrix game page
 		clear_page_from_snake(page, empty, snake);
@@ -431,8 +428,8 @@ int main()
 		{
 			message_game_over();
 			game_over = true;
-			//thread_for_read_input_player1.detach();	
-			thread_for_read_input_player1.join();	
+			thread_for_read_input_player1.detach();
+			//thread_for_read_input_player1.join();	
 			return 0;
 		}
 
