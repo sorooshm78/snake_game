@@ -368,7 +368,7 @@ void read_input_player2(string& move_type)
 		char input_move_type;
 		// Get input move type
 		cin >> input_move_type;
-			
+
 		// Check correct input and if correct moved
 		if(check_correct_input_move_type_player2(move_type, input_move_type))
 			change_move_type_player2(move_type, input_move_type);
@@ -408,11 +408,14 @@ int main()
 	print_page(page, score_player1);
 
 	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(game_over));
+//	thread thread_for_read_input_player2(read_input_player2, ref(move_type_player1));
+
+
 	
 	// Every time snake move
 	while(true)
 	{
-		this_thread::sleep_for(chrono::seconds(1));
+		this_thread::sleep_for(chrono::milliseconds(100));
 	
 		// Clear snake in maxrix game page
 		clear_page_from_snake(page, empty, snake);
