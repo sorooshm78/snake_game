@@ -51,14 +51,14 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 }
 
 // First insert snake coordinates in matrix page
-void initialize_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates_player1, string& snake, int snake_size_palyer1)
+void initialize_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates, string& snake, int snake_size)
 {
 	int x_head_snake = page[0].size() / 2;
 	int y_head_snake = page.size() / 2;
 
-	for(int i = 0; i < snake_size_palyer1 ; i++)
+	for(int i = 0; i < snake_size ; i++)
 	{
-		snake_coordinates_player1.push_back(pair<int, int>(y_head_snake, x_head_snake + i));
+		snake_coordinates.push_back(pair<int, int>(y_head_snake, x_head_snake + i));
 		page[y_head_snake][x_head_snake + i] = snake;
 	}
 }
@@ -86,35 +86,35 @@ void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& f
 }
 
 // Insert snake coordinates in matrix page
-void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates_player1, string& snake)
+void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates, string& snake)
 {
-	for(size_t i = 0; i < snake_coordinates_player1.size(); i++)
+	for(size_t i = 0; i < snake_coordinates.size(); i++)
 	{
-		page[snake_coordinates_player1[i].first][snake_coordinates_player1[i].second] = snake;
+		page[snake_coordinates[i].first][snake_coordinates[i].second] = snake;
 	}
 }
 
 // Move snake in page
-void move(vector<pair<int, int>>& snake_coordinates_player1, string& move_type_player1)
+void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 {
-	int x_head_snake = snake_coordinates_player1[0].second;
-	int y_head_snake = snake_coordinates_player1[0].first;
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
 	
 	// Snake move to left 
-	if(move_type_player1 == "left")
-		snake_coordinates_player1.insert(snake_coordinates_player1.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
+	if(move_type == "left")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
 	
 	// Snake move to right 
-	if(move_type_player1 == "right")
-		snake_coordinates_player1.insert(snake_coordinates_player1.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
+	if(move_type == "right")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
 
 	// Snake move to up
-	if(move_type_player1 == "up")
-		snake_coordinates_player1.insert(snake_coordinates_player1.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
+	if(move_type == "up")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
 
 	// Snake move to down 
-	if(move_type_player1 == "down")
-		snake_coordinates_player1.insert(snake_coordinates_player1.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
+	if(move_type == "down")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
 }
 
 // Clear snake in matrix game page
@@ -147,7 +147,7 @@ void clear_page_from_food(vector<vector<string>>& page, string& empty, string& f
 void print_page(vector<vector<string>>& page, int& score_player1)
 {
 	system("clear");
-	cout << "player 1								player 2" << endl;
+	cout << "player 1" << "				" << "player 2" << endl;
 	cout << "score : " << score_player1 << endl;
 	for(size_t i = 0; i < page.size(); i++)
 	{
@@ -160,10 +160,10 @@ void print_page(vector<vector<string>>& page, int& score_player1)
 }
 
 // Check snake eat food
-bool check_get_score_player1(vector<pair<int, int>>& snake_coordinates_player1, vector<pair<int, int>>& food_coordinates)
+bool check_get_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
 {
-	int x_head_snake = snake_coordinates_player1[0].second;
-	int y_head_snake = snake_coordinates_player1[0].first;
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
 
 	for(size_t i = 0; i < food_coordinates.size(); i++)
 	{ 
@@ -178,62 +178,62 @@ bool check_get_score_player1(vector<pair<int, int>>& snake_coordinates_player1, 
 }
 
 // Add score_player1 when get score_player1
-void add_score_player1(int& score_player1, int value)
+void add_score(int& score, int value)
 {
-	score_player1 += value;
+	score += value;
 }
 
 // Check game over
-bool check_game_over(vector<pair<int, int>>& snake_coordinates_player1)
+bool check_game_over(vector<pair<int, int>>& snake_coordinates)
 {
-	int x_head_snake = snake_coordinates_player1[0].second;
-	int y_head_snake = snake_coordinates_player1[0].first;
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
 
-	for(size_t i = 1; i < snake_coordinates_player1.size(); i++)
+	for(size_t i = 1; i < snake_coordinates.size(); i++)
 	{
-		if(y_head_snake == snake_coordinates_player1[i].first and x_head_snake == snake_coordinates_player1[i].second)
+		if(y_head_snake == snake_coordinates[i].first and x_head_snake == snake_coordinates[i].second)
 			return true;
 	}
 	return false;
 }
 
 // Change input move type to move type
-void change_move_type_player1_player1(string& move_type_player1, char input_move_type_player1)
+void change_move_type_player1(string& move_type, char input_move_type)
 {
-	if(input_move_type_player1 == KEY_UP)
-		move_type_player1 = "up";
+	if(input_move_type == KEY_UP)
+		move_type = "up";
 
-	if(input_move_type_player1 == KEY_DOWN)
-		move_type_player1 = "down";
+	if(input_move_type == KEY_DOWN)
+		move_type = "down";
 
-	if(input_move_type_player1 == KEY_LEFT)
-		move_type_player1 = "left";
+	if(input_move_type == KEY_LEFT)
+		move_type = "left";
 
-	if(input_move_type_player1 == KEY_RIGHT)
-		move_type_player1 = "right";
+	if(input_move_type == KEY_RIGHT)
+		move_type = "right";
 }
 
 // Change input move type to move type
-void change_move_type_player1_player2(string& move_type_player1, char input_move_type_player1)
+void change_move_type_player2(string& move_type, char input_move_type)
 {
-	if(input_move_type_player1 == 'w')
-		move_type_player1 = "up";
+	if(input_move_type == 'w')
+		move_type = "up";
 
-	if(input_move_type_player1 == 's')
-		move_type_player1 = "down";
+	if(input_move_type == 's')
+		move_type = "down";
 
-	if(input_move_type_player1 == 'a')
-		move_type_player1 = "left";
+	if(input_move_type == 'a')
+		move_type = "left";
 
-	if(input_move_type_player1 == 'd')
-		move_type_player1 = "right";
+	if(input_move_type == 'd')
+		move_type = "right";
 }
 
 // Check crash wall and handle it
-void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates_player1)
+void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
 {
-	int x_head_snake = snake_coordinates_player1[0].second;
-	int y_head_snake = snake_coordinates_player1[0].first;
+	int x_head_snake = snake_coordinates[0].second;
+	int y_head_snake = snake_coordinates[0].first;
 
 	int margins_up = 0;
 	int margins_down = page.size() - 1;
@@ -242,19 +242,19 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 
 	// Wall left
 	if(x_head_snake == margins_left)
-		 snake_coordinates_player1[0].second = margins_right - 1;
+		 snake_coordinates[0].second = margins_right - 1;
 
 	// Wall right
 	if(x_head_snake == margins_right)
-		 snake_coordinates_player1[0].second = margins_left + 1;
+		 snake_coordinates[0].second = margins_left + 1;
 	
 	// Wall up
 	if(y_head_snake == margins_up)
-		 snake_coordinates_player1[0].first = margins_down - 1;
+		 snake_coordinates[0].first = margins_down - 1;
 
 	// Wall down
 	if(y_head_snake == margins_down)
-		 snake_coordinates_player1[0].first = margins_up + 1;
+		 snake_coordinates[0].first = margins_up + 1;
 }
 
 // Show game over message
@@ -264,70 +264,70 @@ void message_game_over()
 }
 
 // Cut snake tail in each move
-void cut_snake_tail(vector<pair<int, int>>& snake_coordinates_player1)
+void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
 {
-	snake_coordinates_player1.pop_back();	
+	snake_coordinates.pop_back();	
 }
 
 // Check correct input move type
-bool check_correct_input_move_type_player1_player1(string& move_type_player1, char input_move_type_player1)
+bool check_correct_input_move_type_player1(string& move_type, char input_move_type)
 {
-	if(move_type_player1 == "left" and input_move_type_player1 == KEY_RIGHT)
+	if(move_type == "left" and input_move_type == KEY_RIGHT)
 	{	
-		move_type_player1 == "left";
+		move_type == "left";
 		return false;
 	}
 	
-	if(move_type_player1 == "right" and input_move_type_player1 == KEY_LEFT)
+	if(move_type == "right" and input_move_type == KEY_LEFT)
 	{	
-		move_type_player1 == "right";
+		move_type == "right";
 		return false;
 	}
 
-	if(move_type_player1 == "up" and input_move_type_player1 == KEY_DOWN)
+	if(move_type == "up" and input_move_type == KEY_DOWN)
 	{	
-		move_type_player1 == "up";
+		move_type == "up";
 		return false;
 	}
 	
-	if(move_type_player1 == "down" and input_move_type_player1 == KEY_UP)
+	if(move_type == "down" and input_move_type == KEY_UP)
 	{
-		move_type_player1 == "down";
+		move_type == "down";
 		return false;
 	}
 	return true;
 }
 
 // Check correct input move type
-bool check_correct_input_move_type_player1_player2(string& move_type_player1, char input_move_type_player1)
+bool check_correct_input_move_type_player2(string& move_type, char input_move_type)
 {
-	if(move_type_player1 == "left" and input_move_type_player1 == 'd')
+	if(move_type == "left" and input_move_type == 'd')
 	{	
-		move_type_player1 == "left";
+		move_type == "left";
 		return false;
 	}
 	
-	if(move_type_player1 == "right" and input_move_type_player1 == 'a')
+	if(move_type == "right" and input_move_type == 'a')
 	{	
-		move_type_player1 == "right";
+		move_type == "right";
 		return false;
 	}
 
-	if(move_type_player1 == "up" and input_move_type_player1 == 's')
+	if(move_type == "up" and input_move_type == 's')
 	{	
-		move_type_player1 == "up";
+		move_type == "up";
 		return false;
 	}
 	
-	if(move_type_player1 == "down" and input_move_type_player1 == 'w')
+	if(move_type == "down" and input_move_type == 'w')
 	{
-		move_type_player1 == "down";
+		move_type == "down";
 		return false;
 	}
 	return true;
 }
 
-void read_input_player1(string& move_type_player1)
+void read_input_player1(string& move_type)
 {
 	while (true)
 	{	
@@ -338,22 +338,22 @@ void read_input_player1(string& move_type_player1)
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
 		// Once the buffering is turned off, the rest is simple.
-		char first,second,input_move_type_player1;
+		char first,second,input_move_type;
 		
 		cin >> first;
 		cin >> second;
-		cin >> input_move_type_player1;
+		cin >> input_move_type;
 
 		// Using 3 char type, Cause up down right left consist with 3 character
 		if ((first == 27) and (second == 91)) 
 		{
-			if(check_correct_input_move_type_player1_player1(move_type_player1, input_move_type_player1))
-				change_move_type_player1_player1(move_type_player1, input_move_type_player1);
+			if(check_correct_input_move_type_player1(move_type, input_move_type))
+				change_move_type_player1(move_type, input_move_type);
 		}
 	}
 }
 			
-void read_input_player2(string& move_type_player1)
+void read_input_player2(string& move_type)
 {
 	while (true)
 	{	
@@ -363,13 +363,13 @@ void read_input_player2(string& move_type_player1)
 		t.c_lflag &= ~ICANON;
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-		char input_move_type_player1;
+		char input_move_type;
 		// Get input move type
-		cin >> input_move_type_player1;
+		cin >> input_move_type;
 			
 		// Check correct input and if correct moved
-		if(check_correct_input_move_type_player1_player2(move_type_player1, input_move_type_player1))
-			change_move_type_player1_player2(move_type_player1, input_move_type_player1);
+		if(check_correct_input_move_type_player2(move_type, input_move_type))
+			change_move_type_player2(move_type, input_move_type);
 	}
 }
 
@@ -404,7 +404,7 @@ int main()
 	// Primitive Print
 	print_page(page, score_player1);
 
-	thread read_input_thread(read_input_player1, ref(move_type_player1));
+	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1));
 	
 	// Every time snake move
 	while(true)
@@ -428,11 +428,11 @@ int main()
 		}
 
 		// Check get score_player1 when snake eat food
-		if(check_get_score_player1(snake_coordinates_player1, food_coordinates))
+		if(check_get_score(snake_coordinates_player1, food_coordinates))
 		{
 			// Add score_player1 and cut not snake tail
 			snake_size_palyer1 ++; 
-			add_score_player1(score_player1, value_score);
+			add_score(score_player1, value_score);
 			insert_food_in_page(page, food_coordinates, empty, food, 1);
 		}
 		else
@@ -443,7 +443,5 @@ int main()
 		
 		// Print martix game page
 		print_page(page, score_player1);
-
-
 	}
 }
