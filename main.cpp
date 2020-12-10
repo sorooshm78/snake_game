@@ -158,11 +158,11 @@ void clear_page_from_food(vector<vector<string>>& page, string& empty, string& f
 }
 
 // Print matrix game page in output
-void print_page(vector<vector<string>>& page, int& score_player1)
+void print_page(vector<vector<string>>& page, int score1, int score2)
 {
 	system("clear");
 	cout << "player 1" << "				" << "player 2" << endl;
-	cout << "score : " << score_player1 << endl;
+	cout << "score : " << score1 << "				" << "score : " << score2 << endl;
 	for(size_t i = 0; i < page.size(); i++)
 	{
 		for(size_t j = 0; j < page[i].size(); j++)
@@ -272,7 +272,7 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 }
 
 // Show game over message
-void message_game_over(string palyer)
+void message_game_over(string player)
 {
 	cout << endl;
 	if(player == "EQUAL")
@@ -406,12 +406,14 @@ void menu(bool& two_player_game)
 		two_player_game = true;
 }
 
-bool check_crash_together(int x_head_snake, int y_head_snak, vector<pair<int, int>>& snake_coordinates)
+bool check_crash_together(int x_head_snake, int y_head_snake, vector<pair<int, int>>& snake_coordinates)
 {
 	for(size_t i = 1 ; i < snake_coordinates.size() ; i++)
 	{
 		if(x_head_snake == snake_coordinates[i].second and y_head_snake == snake_coordinates[i].first)
+		{	
 			return true;
+		}
 	}
 	return false;
 }
@@ -419,7 +421,7 @@ bool check_crash_together(int x_head_snake, int y_head_snak, vector<pair<int, in
 bool check_crash_head_to_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2)
 {
 	if(snake_coordinates1[0].first == snake_coordinates2[0].first and snake_coordinates1[0].second == snake_coordinates2[0].second)
-		return true
+		return true;
 	return false;
 }
 
@@ -455,8 +457,8 @@ int main()
 	int width_page = 20;
  	int count_food = 1;
 	int snake_size = 5;
-	int score_player1 = 0;
-	int score_player2 = 0;
+	int score1 = 0;
+	int score2 = 0;
 	bool two_player_game = false;
 
 	menu(two_player_game);
@@ -468,9 +470,9 @@ int main()
 	insert_food_in_page(page, food_coordinates, empty, food, count_food);
 	
 	// Primitive Print
-	print_page(page, score_player1);
+	print_page(page, score1, score2);
 
-/*	thread thread_for_read_input(read_input_player1, ref(move_type_player1), ref(end_game)); ///////////////////////////
+	thread thread_for_read_input(read_input_player1, ref(move_type_player1), ref(end_game)); ///////////////////////////
 
 	// Every time snake move
 	while(true)
@@ -510,7 +512,7 @@ int main()
 		{
 			if(check_game_over(snake_coordinates_player2))
 			{
-				message_game_over("PLAYER 2);
+				message_game_over("PLAYER 2");
 				end_game = true;
 				thread_for_read_input.join();	
 				return 0;
@@ -523,7 +525,7 @@ int main()
 		
 		if(two_player_game == true)
 		{
-			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, vector<pair<int, int>>& snake_coordinates_player2))
+			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
 			{
 				message_game_over("PLAYER 1");
 				end_game = true;
@@ -531,7 +533,7 @@ int main()
 				return 0;
 			}
 
-			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, vector<pair<int, int>>& snake_coordinates_player1))
+			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
 			{
 				message_game_over("PLAYER 2");
 				end_game = true;
@@ -545,7 +547,7 @@ int main()
 		// CHECH RASH HEAD TOGETHER
 		if(two_player_game == true)
 		{
-			if(check_crash_head_to_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2))
+			if(check_crash_head_to_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
 				message_game_over(which_loser(score1, score2));
 				end_game = true;
@@ -555,16 +557,28 @@ int main()
 		}
 
 
-		// Check get score_player1 when snake eat food
+		// GET SCORE
 		if(check_get_score(snake_coordinates_player1, food_coordinates))
 		{
 			// Add score_player1 and cut not snake tail
-			add_score(score_player1, value_score);
+			add_score(score1, value_score);
 			insert_food_in_page(page, food_coordinates, empty, food, 1);
 		}
 		else
 			cut_snake_tail(snake_coordinates_player1);
-		
-		print_page(page, score_player1);
-	}*/
+
+		if(two_player_game == true)
+		{		
+			if(check_get_score(snake_coordinates_player2, food_coordinates))
+			{
+				// Add score_player1 and cut not snake tail
+				add_score(score2, value_score);
+				insert_food_in_page(page, food_coordinates, empty, food, 1);
+			}
+			else
+				cut_snake_tail(snake_coordinates_player2);
+		}
+
+		print_page(page, score1, score2);
+	}
 }
