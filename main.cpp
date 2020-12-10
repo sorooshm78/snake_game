@@ -16,6 +16,8 @@
 #define KEY_RIGHT 67
 #define KEY_LEFT 68
 
+#define EASY 500
+
 using namespace std;
 
 // Initialize game page for begin
@@ -329,9 +331,9 @@ bool check_correct_input_move_type_player2(string& move_type, char input_move_ty
 	return true;
 }
 
-void read_input_player1(string& move_type, atomic<bool>& game_over)
+void read_input_player1(string& move_type, atomic<bool>& end_game)
 {
-	while (!game_over)
+	while(!end_game)
 	{	
 		// Black magic to prevent Linux from buffering keystrokes.
 		struct termios t;
@@ -352,6 +354,7 @@ void read_input_player1(string& move_type, atomic<bool>& game_over)
 			if(check_correct_input_move_type_player1(move_type, input_move_type))
 				change_move_type_player1(move_type, input_move_type);
 		}
+		this_thread::sleep_for(chrono::milliseconds(EASY));
 	}
 }
 			
@@ -372,17 +375,18 @@ void read_input_player2(string& move_type)
 		// Check correct input and if correct moved
 		if(check_correct_input_move_type_player2(move_type, input_move_type))
 			change_move_type_player2(move_type, input_move_type);
+
+		this_thread::sleep_for(chrono::milliseconds(1000));
 	}
 }
 
 
 int main()
 {
-	// Srand
 	srand(time(0));
 
 	// Configure setting snake game
-	atomic<bool> game_over { false } ;
+	atomic<bool> end_game {false};
 	vector<pair<int, int>> snake_coordinates_player1;
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
@@ -407,13 +411,13 @@ int main()
 	// Primitive Print
 	print_page(page, score_player1);
 
-	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(game_over));
+	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(end_game));
 
 	// Every time snake move
 	while(true)
 	{
-		this_thread::sleep_for(chrono::milliseconds(1000));
-	
+		this_thread::sleep_for(chrono::milliseconds(EASY));
+
 		// Clear snake in maxrix game page
 		clear_page_from_snake(page, empty, snake);
 	
@@ -427,9 +431,8 @@ int main()
 		if(check_game_over(snake_coordinates_player1))
 		{
 			message_game_over();
-			game_over = true;
-			thread_for_read_input_player1.detach();
-			//thread_for_read_input_player1.join();	
+			end_game = true;
+			thread_for_read_input_player1.join();	
 			return 0;
 		}
 
@@ -449,5 +452,6 @@ int main()
 		
 		// Print martix game page
 		print_page(page, score_player1);
+		//this_thread::sleep_for(chrono::milliseconds(1000));
 	}
 }
