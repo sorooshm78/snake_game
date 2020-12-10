@@ -403,6 +403,16 @@ void menu(bool& two_player_game)
 		two_player_game = true;
 }
 
+bool check_crash_together(int x_head_snake, int y_head_snak, vector<pair<int, int>>& snake_coordinates)
+{
+	for(size_t i = 1 ; i < snake_coordinates.size() ; i++)
+	{
+		if(x_head_snake == snake_coordinates[i].second and y_head_snake == snake_coordinates[i].first)
+			return true;
+	}
+	return false;
+}
+
 int main()
 {
 	srand(time(0));
@@ -487,7 +497,35 @@ int main()
 			}
 		}
 
-		// CHECK GAME OVER 
+
+
+		// CHECK GAME OVER CRASH ANOTHER
+		
+		if(two_player_game == true)
+		{
+			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, vector<pair<int, int>>& snake_coordinates_player2))
+			{
+				message_game_over("PLAYER 1");
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}
+
+			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, vector<pair<int, int>>& snake_coordinates_player1))
+			{
+				message_game_over("PLAYER 2");
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}
+
+		}	
+
+
+
+
+
+
 
 
 
