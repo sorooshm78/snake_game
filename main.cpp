@@ -275,7 +275,10 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 void message_game_over(string palyer)
 {
 	cout << endl;
-	cout << player <<"GAME OVER" << endl;
+	if(player == "EQUAL")
+		cout << "EQUAL" << endl;
+	else	 
+		cout << player << "GAME OVER" << endl;
 }
 
 // Cut snake tail in each move
@@ -413,6 +416,23 @@ bool check_crash_together(int x_head_snake, int y_head_snak, vector<pair<int, in
 	return false;
 }
 
+bool check_crash_head_to_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2)
+{
+	if(snake_coordinates1[0].first == snake_coordinates2[0].first and snake_coordinates1[0].second == snake_coordinates2[0].second)
+		return true
+	return false;
+}
+
+string which_loser(int score1, int score2)
+{
+	if(score1 == score2)
+		return string("EQUAL");
+	if(score1 > score2)
+		return string("PLAYER 2");
+	else 
+		return string("PLAYER 1"); 
+}
+
 int main()
 {
 	srand(time(0));
@@ -436,7 +456,7 @@ int main()
  	int count_food = 1;
 	int snake_size = 5;
 	int score_player1 = 0;
-//	int score_player2 = 0;
+	int score_player2 = 0;
 	bool two_player_game = false;
 
 	menu(two_player_game);
@@ -522,24 +542,17 @@ int main()
 		}	
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		// CHECH RASH HEAD TOGETHER
+		if(two_player_game == true)
+		{
+			if(check_crash_head_to_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2))
+			{
+				message_game_over(which_loser(score1, score2));
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}	
+		}
 
 
 		// Check get score_player1 when snake eat food
