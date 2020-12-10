@@ -20,7 +20,6 @@
 
 using namespace std;
 
-// Initialize game page for begin
 void initialize_page(vector<vector<string>>& page, int lenght, int width, string& empty)
 {
 	vector <string> x_page(lenght, empty);
@@ -30,7 +29,6 @@ void initialize_page(vector<vector<string>>& page, int lenght, int width, string
 	}
 }
 
-// Insert margins in game page
 void initialize_margins_page(vector<vector<string>>& page, string& margins)
 {
 	int width = page.size();
@@ -53,16 +51,29 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 		page[i][lenght - 1] = margins;
 }
 
-// First insert snake coordinates in matrix page
-void initialize_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates, string& snake, int snake_size)
+void initialize_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates1, string& snake1, vector<pair<int, int>>& snake_coordinates2, string& snake2, int snake_size, bool two_player_game)
 {
-	int x_head_snake = page[0].size() / 2;
-	int y_head_snake = page.size() / 2;
+	// player 1
+	int x_head_snake1 = page[0].size() / 2;
+	int y_head_snake1 = page.size() / 3;
 
 	for(int i = 0; i < snake_size ; i++)
 	{
-		snake_coordinates.push_back(pair<int, int>(y_head_snake, x_head_snake + i));
-		page[y_head_snake][x_head_snake + i] = snake;
+		snake_coordinates1.push_back(pair<int, int>(y_head_snake1, x_head_snake1 + i));
+		page[y_head_snake1][x_head_snake1 + i] = snake1;
+	}
+	
+	// player 2
+	if(two_player_game == true)
+	{
+		int x_head_snake2 = page[0].size() - x_head_snake1;
+		int y_head_snake2 = page.size() - y_head_snake1;
+
+		for(int i = 0; i < snake_size ; i++)
+		{
+			snake_coordinates2.push_back(pair<int, int>(y_head_snake2, x_head_snake2 + i));
+			page[y_head_snake2][x_head_snake2 + i] = snake2;
+		}
 	}
 }
 
@@ -121,13 +132,13 @@ void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 }
 
 // Clear snake in matrix game page
-void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& snake)
+void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& snake1, string& snake2)
 {
 	for(size_t i = 0; i < page.size(); i++)
 	{
 		for(size_t j = 0; j < page[i].size(); j++)
 		{	
-			if(page[i][j] == snake)
+			if(page[i][j] == snake1 or page[i][j] == snake2)
 				page[i][j] = empty;
 		}
 	}
@@ -261,10 +272,10 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 }
 
 // Show game over message
-void message_game_over()
+void message_game_over(string palyer)
 {
 	cout << endl;
-	cout << "you are is game over!!!" << endl;
+	cout << player <<"GAME OVER" << endl;
 }
 
 // Cut snake tail in each move
@@ -383,7 +394,7 @@ void read_input_player2(string& move_type)
 void menu(bool& two_player_game)
 {
 	int num = 1;
-	cout << "********" << "MENU" << "********" << endl;
+	cout << "********(" << "MENU" << ")********" << endl;
 	cout << "1.one player game " << endl;
 	cout << "2.two player game " << endl;
 	cout << "Select the number you want " << endl;
@@ -406,7 +417,8 @@ int main()
 	string move_type_player2 = "left";
 	string margins = "#";
 	string empty = ".";
-	string snake = "+";
+	string snake1 = "+";
+	string snake2 = "@";
 	string food = "*";
 	int length_page = 30;
 	int value_score = 1;
@@ -422,37 +434,75 @@ int main()
 	// Initialize Primitive Game Page
 	initialize_page(page, length_page, width_page, empty);
 	initialize_margins_page(page, margins);
-
-	initialize_snake_in_page(page, snake_coordinates_player1, snake, snake_size);
+	initialize_snake_in_page(page, snake_coordinates_player1, snake1, snake_coordinates_player2, snake2, snake_size, two_player_game);
 	insert_food_in_page(page, food_coordinates, empty, food, count_food);
 	
 	// Primitive Print
 	print_page(page, score_player1);
 
-	thread thread_for_read_input_player1(read_input_player1, ref(move_type_player1), ref(end_game));
+/*	thread thread_for_read_input(read_input_player1, ref(move_type_player1), ref(end_game)); ///////////////////////////
 
 	// Every time snake move
 	while(true)
 	{
 		this_thread::sleep_for(chrono::milliseconds(EASY));
 
-		// Clear snake in maxrix game page
-		clear_page_from_snake(page, empty, snake);
+		// CLEAR
+		clear_page_from_snake(page, empty, snake1, snake2);
 	
-		// Move snake by input move type 
+		// MOVE
 		move(snake_coordinates_player1, move_type_player1);
-		
-		// Check and handle crash wall
-		handle_crash_wall(page, snake_coordinates_player1);
+		if(two_player_game  == true)
+			move(snake_coordinates_player2, move_type_player2);
 
-		// Check game over and end game
+		
+		// CRASH
+		handle_crash_wall(page, snake_coordinates_player1);
+		if(two_player_game  == true)
+			handle_crash_wall(page, snake_coordinates_player2);
+
+
+		// INSERT SNAKE
+		insert_snake_in_page(page, snake_coordinates_player1, snake1);
+		if(two_player_game  == true)
+			insert_snake_in_page(page, snake_coordinates_player2, snake2);
+
+		// CHECK GAME OVER CRASH SELF
 		if(check_game_over(snake_coordinates_player1))
 		{
-			message_game_over();
+			message_game_over("PLAYER 1");
 			end_game = true;
-			thread_for_read_input_player1.join();	
+			thread_for_read_input.join();	
 			return 0;
 		}
+
+		if(two_player_game == true)
+		{
+			if(check_game_over(snake_coordinates_player2))
+			{
+				message_game_over("PLAYER 2);
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}
+		}
+
+		// CHECK GAME OVER 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		// Check get score_player1 when snake eat food
 		if(check_get_score(snake_coordinates_player1, food_coordinates))
@@ -463,12 +513,7 @@ int main()
 		}
 		else
 			cut_snake_tail(snake_coordinates_player1);
-
-		// Insert snake in matrix page when snake move
-		insert_snake_in_page(page, snake_coordinates_player1, snake);
 		
-		// Print martix game page
 		print_page(page, score_player1);
-		//this_thread::sleep_for(chrono::milliseconds(1000));
-	}
+	}*/
 }
