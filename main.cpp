@@ -380,6 +380,17 @@ void read_input_player2(string& move_type)
 	}
 }
 
+void menu(bool& two_player_game)
+{
+	int num = 1;
+	cout << "********" << "MENU" << "********" << endl;
+	cout << "1.one player game " << endl;
+	cout << "2.two player game " << endl;
+	cout << "Select the number you want " << endl;
+	cin >> num;
+	if(num == 2)
+		two_player_game = true;
+}
 
 int main()
 {
@@ -388,9 +399,11 @@ int main()
 	// Configure setting snake game
 	atomic<bool> end_game {false};
 	vector<pair<int, int>> snake_coordinates_player1;
+	vector<pair<int, int>> snake_coordinates_player2;
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
 	string move_type_player1 = "left"; 
+	string move_type_player2 = "left";
 	string margins = "#";
 	string empty = ".";
 	string snake = "+";
@@ -399,13 +412,18 @@ int main()
 	int value_score = 1;
 	int width_page = 20;
  	int count_food = 1;
-	int snake_size_palyer1 = 5;
+	int snake_size = 5;
 	int score_player1 = 0;
+//	int score_player2 = 0;
+	bool two_player_game = false;
 
+	menu(two_player_game);
+	
 	// Initialize Primitive Game Page
 	initialize_page(page, length_page, width_page, empty);
 	initialize_margins_page(page, margins);
-	initialize_snake_in_page(page, snake_coordinates_player1, snake, snake_size_palyer1);
+
+	initialize_snake_in_page(page, snake_coordinates_player1, snake, snake_size);
 	insert_food_in_page(page, food_coordinates, empty, food, count_food);
 	
 	// Primitive Print
@@ -440,7 +458,6 @@ int main()
 		if(check_get_score(snake_coordinates_player1, food_coordinates))
 		{
 			// Add score_player1 and cut not snake tail
-			snake_size_palyer1 ++; 
 			add_score(score_player1, value_score);
 			insert_food_in_page(page, food_coordinates, empty, food, 1);
 		}
