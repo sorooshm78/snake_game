@@ -278,7 +278,7 @@ void message_game_over(string player)
 	if(player == "EQUAL")
 		cout << "EQUAL" << endl;
 	else	 
-		cout << player << "GAME OVER" << endl;
+		cout << player << " GAME OVER" << endl;
 }
 
 // Cut snake tail in each move
@@ -368,7 +368,7 @@ void read_input_player1(string& move_type, atomic<bool>& end_game)
 			if(check_correct_input_move_type_player1(move_type, input_move_type))
 				change_move_type_player1(move_type, input_move_type);
 		}
-		this_thread::sleep_for(chrono::milliseconds(EASY));
+	//	this_thread::sleep_for(chrono::milliseconds(EASY));
 	}
 }
 			
