@@ -410,6 +410,13 @@ string which_loser(int score1, int score2)
 		return string("PLAYER 1"); 
 }
 
+void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input)
+{ 
+	message_game_over(player);
+	end_game = true;
+	thread_for_read_input.join();							
+}
+
 int main()
 {
 	srand(time(0));
@@ -467,47 +474,39 @@ int main()
 			insert_snake_in_page(page, snake_coordinates_player1, snake1);
 			insert_snake_in_page(page, snake_coordinates_player2, snake2);
 
+
 			// PLAYER 1
 			if(check_game_over(snake_coordinates_player1))
 			{
-				message_game_over("PLAYER 1");
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
 				return 0;
 			}
+
 			// PLAYER 2
 			if(check_game_over(snake_coordinates_player2))
 			{
-				message_game_over("PLAYER 2");
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
 				return 0;
 			}
 
 			// PLAYER 1
 			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
 			{
-				message_game_over("PLAYER 1");
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
 				return 0;
 			}
 			
 			// PLAYER 2
 			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
 			{
-				message_game_over("PLAYER 2");
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
 				return 0;
 			}
 
 			// PLAYER 1 and PLAYER 2
 			if(check_crash_head_to_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
-				message_game_over(which_loser(score1, score2));
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER(which_loser(score1, score2), end_game, thread_for_read_input);	
 				return 0;
 			}	
 
@@ -549,9 +548,7 @@ int main()
 
 			if(check_game_over(snake_coordinates_player1))
 			{
-				message_game_over("PLAYER 1");
-				end_game = true;
-				thread_for_read_input.join();	
+				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
 				return 0;
 			}
 
