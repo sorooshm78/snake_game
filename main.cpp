@@ -145,8 +145,8 @@ void print_page(vector<vector<string>>& page, int score1, int score2, bool two_p
 
 	if(two_player == true)
 	{
-		cout << "player 1" << "				" << "player 2" << endl;
-		cout << "score : " << score1 << "				" << "score : " << score2 << endl;
+		cout << "player 1" << "\t\t\t\t" << "player 2" << endl;
+		cout << "score : " << score1 << "\t\t\t\t" << "score : " << score2 << endl;
 	}
 	else
 	{
@@ -449,42 +449,33 @@ int main()
 
 	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); ///////////////////////////
 
-	// Every time snake move
-	while(true)
+	// TWO PLAYER GAME
+	if(two_player_game == true)
 	{
-		this_thread::sleep_for(chrono::milliseconds(EASY));
+		while(true)
+		{
+			this_thread::sleep_for(chrono::milliseconds(EASY));
 
-		// CLEAR
-		clear_page_from_snake(page, empty, snake1, snake2);
-	
-		// MOVE
-		move(snake_coordinates_player1, move_type_player1);
-		if(two_player_game  == true)
+			clear_page_from_snake(page, empty, snake1, snake2);
+					
+			move(snake_coordinates_player1, move_type_player1);
 			move(snake_coordinates_player2, move_type_player2);
-
-		
-		// CRASH
-		handle_crash_wall(page, snake_coordinates_player1);
-		if(two_player_game  == true)
+			
+			handle_crash_wall(page, snake_coordinates_player1);
 			handle_crash_wall(page, snake_coordinates_player2);
 
-
-		// INSERT SNAKE
-		insert_snake_in_page(page, snake_coordinates_player1, snake1);
-		if(two_player_game  == true)
+			insert_snake_in_page(page, snake_coordinates_player1, snake1);
 			insert_snake_in_page(page, snake_coordinates_player2, snake2);
 
-		// CHECK GAME OVER CRASH SELF
-		if(check_game_over(snake_coordinates_player1))
-		{
-			message_game_over("PLAYER 1");
-			end_game = true;
-			thread_for_read_input.join();	
-			return 0;
-		}
-
-		if(two_player_game == true)
-		{
+			// PLAYER 1
+			if(check_game_over(snake_coordinates_player1))
+			{
+				message_game_over("PLAYER 1");
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}
+			// PLAYER 2
 			if(check_game_over(snake_coordinates_player2))
 			{
 				message_game_over("PLAYER 2");
@@ -492,14 +483,8 @@ int main()
 				thread_for_read_input.join();	
 				return 0;
 			}
-		}
 
-
-
-		// CHECK GAME OVER CRASH ANOTHER
-		
-		if(two_player_game == true)
-		{
+			// PLAYER 1
 			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
 			{
 				message_game_over("PLAYER 1");
@@ -507,7 +492,8 @@ int main()
 				thread_for_read_input.join();	
 				return 0;
 			}
-
+			
+			// PLAYER 2
 			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
 			{
 				message_game_over("PLAYER 2");
@@ -516,12 +502,7 @@ int main()
 				return 0;
 			}
 
-		}	
-
-
-		// CHECH RASH HEAD TOGETHER
-		if(two_player_game == true)
-		{
+			// PLAYER 1 and PLAYER 2
 			if(check_crash_head_to_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
 				message_game_over(which_loser(score1, score2));
@@ -529,31 +510,60 @@ int main()
 				thread_for_read_input.join();	
 				return 0;
 			}	
-		}
 
+			// PLAYER 1
+			if(check_get_score(snake_coordinates_player1, food_coordinates))
+			{
+				add_score(score1, value_score);
+				insert_food_in_page(page, food_coordinates, empty, food, 1);
+			}
+			else
+				cut_snake_tail(snake_coordinates_player1);
 
-		// GET SCORE
-		if(check_get_score(snake_coordinates_player1, food_coordinates))
-		{
-			// Add score_player1 and cut not snake tail
-			add_score(score1, value_score);
-			insert_food_in_page(page, food_coordinates, empty, food, 1);
-		}
-		else
-			cut_snake_tail(snake_coordinates_player1);
-
-		if(two_player_game == true)
-		{		
+			// PLAYER 2
 			if(check_get_score(snake_coordinates_player2, food_coordinates))
 			{
-				// Add score_player1 and cut not snake tail
 				add_score(score2, value_score);
 				insert_food_in_page(page, food_coordinates, empty, food, 1);
 			}
 			else
 				cut_snake_tail(snake_coordinates_player2);
-		}
 
-		print_page(page, score1, score2, two_player_game);
+			print_page(page, score1, score2, two_player_game);
+		}
+	}
+	else
+	{
+		// ONE PLAYER GAME
+		while(true)
+		{
+			this_thread::sleep_for(chrono::milliseconds(EASY));
+
+			clear_page_from_snake(page, empty, snake1, snake2);
+				
+			move(snake_coordinates_player1, move_type_player1);
+			
+			handle_crash_wall(page, snake_coordinates_player1);
+
+			insert_snake_in_page(page, snake_coordinates_player1, snake1);
+
+			if(check_game_over(snake_coordinates_player1))
+			{
+				message_game_over("PLAYER 1");
+				end_game = true;
+				thread_for_read_input.join();	
+				return 0;
+			}
+
+			if(check_get_score(snake_coordinates_player1, food_coordinates))
+			{
+				add_score(score1, value_score);
+				insert_food_in_page(page, food_coordinates, empty, food, 1);
+			}
+			else
+				cut_snake_tail(snake_coordinates_player1);
+
+			print_page(page, score1, score2, two_player_game);
+		}
 	}
 }
