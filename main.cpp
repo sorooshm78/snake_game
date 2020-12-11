@@ -417,6 +417,12 @@ void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_in
 	thread_for_read_input.join();							
 }
 
+void GET_SCORE(vector<vector<string>>& page, vector<pair<int, int>>& food_coordinates, string& empty, string& food, int& score, int val)
+{
+	add_score(score, val);
+	insert_food_in_page(page, food_coordinates, empty, food, 1);
+}
+
 int main()
 {
 	srand(time(0));
@@ -512,19 +518,13 @@ int main()
 
 			// PLAYER 1
 			if(check_get_score(snake_coordinates_player1, food_coordinates))
-			{
-				add_score(score1, value_score);
-				insert_food_in_page(page, food_coordinates, empty, food, 1);
-			}
+				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
 			else
 				cut_snake_tail(snake_coordinates_player1);
 
 			// PLAYER 2
 			if(check_get_score(snake_coordinates_player2, food_coordinates))
-			{
-				add_score(score2, value_score);
-				insert_food_in_page(page, food_coordinates, empty, food, 1);
-			}
+				GET_SCORE(page, food_coordinates, empty, food, score2, value_score);
 			else
 				cut_snake_tail(snake_coordinates_player2);
 
@@ -553,10 +553,7 @@ int main()
 			}
 
 			if(check_get_score(snake_coordinates_player1, food_coordinates))
-			{
-				add_score(score1, value_score);
-				insert_food_in_page(page, food_coordinates, empty, food, 1);
-			}
+				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
 			else
 				cut_snake_tail(snake_coordinates_player1);
 
