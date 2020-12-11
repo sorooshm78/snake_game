@@ -1,12 +1,11 @@
+#include <termios.h>
 #include <iostream>
+#include <stdlib.h>
 #include <thread>
 #include <chrono>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 #include <time.h>
-#include <iostream>
-#include <termios.h>
 #include <atomic>
 
 #define STDIN_FILENO 0
@@ -16,7 +15,7 @@
 #define KEY_RIGHT 67
 #define KEY_LEFT 68
 
-#define EASY 500
+#define EASY 300
 
 using namespace std;
 
@@ -34,19 +33,19 @@ void initialize_margins_page(vector<vector<string>>& page, string& margins)
 	int width = page.size();
 	int lenght = page[0].size();
 
-	// up margins	
+	// UP margins	
 	for(int i = 0; i < lenght; i++)
 		page[0][i] = margins;
 
-	// down margins
+	// DOWN margins
 	for(int i = 0; i < lenght; i++)
 		page[width - 1][i] = margins;
 
-	// right margins
+	// RIGHT margins
 	for(int i = 0; i < width; i++)
 		page[i][0] = margins;			
 
-	// left margins
+	// LEFT margins
 	for(int i = 0; i < width; i++)
 		page[i][lenght - 1] = margins;
 }
@@ -77,7 +76,6 @@ void initialize_snake_in_page(vector<vector<string>>& page, vector<pair<int, int
 	}
 }
 
-// Insert food coordinates in matrix page
 void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& food_coordinates, string& empty, string& food, int count_food)
 {
 	int lenght = page[0].size();
@@ -99,7 +97,6 @@ void insert_food_in_page(vector<vector<string>>& page, vector<pair<int, int>>& f
 	}
 }
 
-// Insert snake coordinates in matrix page
 void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates, string& snake)
 {
 	for(size_t i = 0; i < snake_coordinates.size(); i++)
@@ -108,30 +105,28 @@ void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& 
 	}
 }
 
-// Move snake in page
 void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
 	
-	// Snake move to left 
+	// Snake move to LEFT 
 	if(move_type == "left")
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
 	
-	// Snake move to right 
+	// Snake move to RIGHT 
 	if(move_type == "right")
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
 
-	// Snake move to up
+	// Snake move to UP
 	if(move_type == "up")
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
 
-	// Snake move to down 
+	// Snake move to DOWN 
 	if(move_type == "down")
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
 }
 
-// Clear snake in matrix game page
 void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& snake1, string& snake2)
 {
 	for(size_t i = 0; i < page.size(); i++)
@@ -144,25 +139,21 @@ void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& 
 	}
 }
 
-// Clear food in matrix game page
-void clear_page_from_food(vector<vector<string>>& page, string& empty, string& food)
-{
-	for(size_t i = 0; i < page.size(); i++)
-	{
-		for(size_t j = 0; j < page[i].size(); j++)
-		{	
-			if(page[i][j] == food)
-				page[i][j] = empty;
-		}
-	}
-}
-
-// Print matrix game page in output
-void print_page(vector<vector<string>>& page, int score1, int score2)
+void print_page(vector<vector<string>>& page, int score1, int score2, bool two_player)
 {
 	system("clear");
-	cout << "player 1" << "				" << "player 2" << endl;
-	cout << "score : " << score1 << "				" << "score : " << score2 << endl;
+
+	if(two_player == true)
+	{
+		cout << "player 1" << "				" << "player 2" << endl;
+		cout << "score : " << score1 << "				" << "score : " << score2 << endl;
+	}
+	else
+	{
+		cout << "player 1" << endl;
+		cout << "score : " << score1 << endl;
+	}
+	
 	for(size_t i = 0; i < page.size(); i++)
 	{
 		for(size_t j = 0; j < page[i].size(); j++)
@@ -173,7 +164,6 @@ void print_page(vector<vector<string>>& page, int score1, int score2)
 	}
 }
 
-// Check snake eat food
 bool check_get_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int, int>>& food_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
@@ -191,13 +181,11 @@ bool check_get_score(vector<pair<int, int>>& snake_coordinates, vector<pair<int,
 	return false;
 }
 
-// Add score_player1 when get score_player1
 void add_score(int& score, int value)
 {
 	score += value;
 }
 
-// Check game over
 bool check_game_over(vector<pair<int, int>>& snake_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
@@ -211,7 +199,6 @@ bool check_game_over(vector<pair<int, int>>& snake_coordinates)
 	return false;
 }
 
-// Change input move type to move type
 void change_move_type_player1(string& move_type, char input_move_type)
 {
 	if(input_move_type == KEY_UP)
@@ -227,7 +214,6 @@ void change_move_type_player1(string& move_type, char input_move_type)
 		move_type = "right";
 }
 
-// Change input move type to move type
 void change_move_type_player2(string& move_type, char input_move_type)
 {
 	if(input_move_type == 'w')
@@ -243,7 +229,6 @@ void change_move_type_player2(string& move_type, char input_move_type)
 		move_type = "right";
 }
 
-// Check crash wall and handle it
 void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& snake_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
@@ -271,7 +256,6 @@ void handle_crash_wall(vector<vector<string>>& page, vector<pair<int, int>>& sna
 		 snake_coordinates[0].first = margins_up + 1;
 }
 
-// Show game over message
 void message_game_over(string player)
 {
 	cout << endl;
@@ -281,13 +265,11 @@ void message_game_over(string player)
 		cout << player << " GAME OVER" << endl;
 }
 
-// Cut snake tail in each move
 void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
 {
 	snake_coordinates.pop_back();	
 }
 
-// Check correct input move type
 bool check_correct_input_move_type_player1(string& move_type, char input_move_type)
 {
 	if(move_type == "left" and input_move_type == KEY_RIGHT)
@@ -316,7 +298,6 @@ bool check_correct_input_move_type_player1(string& move_type, char input_move_ty
 	return true;
 }
 
-// Check correct input move type
 bool check_correct_input_move_type_player2(string& move_type, char input_move_type)
 {
 	if(move_type == "left" and input_move_type == 'd')
@@ -383,14 +364,21 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 			
 void menu(bool& two_player_game)
 {
-	int num = 1;
-	cout << "********(" << "MENU" << ")********" << endl;
-	cout << "1.one player game " << endl;
-	cout << "2.two player game " << endl;
-	cout << "Select the number you want " << endl;
-	cin >> num;
-	if(num == 2)
-		two_player_game = true;
+	string num = "0";
+	while(stoi(num) != 1 and stoi(num) != 2)
+	{
+		system("clear");
+		cout << "********(" << "MENU" << ")********" << endl;
+		cout << "1.one player game " << endl;
+		cout << "2.two player game " << endl;
+		cout << "**********************" << endl;
+		cout << "Select the number you want : ";
+		cin >> num;
+		if(num[0] <= 48 or num[0] >= 57)
+			num = "0";
+		else if(stoi(num) == 2)
+			two_player_game = true;
+	}
 }
 
 bool check_crash_together(int x_head_snake, int y_head_snake, vector<pair<int, int>>& snake_coordinates)
@@ -457,7 +445,7 @@ int main()
 	insert_food_in_page(page, food_coordinates, empty, food, count_food);
 	
 	// Primitive Print
-	print_page(page, score1, score2);
+	print_page(page, score1, score2, two_player_game);
 
 	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); ///////////////////////////
 
@@ -566,6 +554,6 @@ int main()
 				cut_snake_tail(snake_coordinates_player2);
 		}
 
-		print_page(page, score1, score2);
+		print_page(page, score1, score2, two_player_game);
 	}
 }
