@@ -345,7 +345,7 @@ bool check_correct_input_move_type_player2(string& move_type, char input_move_ty
 	return true;
 }
 
-void read_input_player1(string& move_type, atomic<bool>& end_game)
+void read_input(string& move_type, atomic<bool>& end_game)
 {
 	while(!end_game)
 	{	
@@ -356,19 +356,33 @@ void read_input_player1(string& move_type, atomic<bool>& end_game)
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
 		// Once the buffering is turned off, the rest is simple.
-		char first,second,input_move_type;
+		char input1;//,input2,input3;
 		
-		cin >> first;
-		cin >> second;
-		cin >> input_move_type;
+		cin >> input1;
+		if(input1 == 'w' or input1 == 's' or input1 == 'd' or input1 == 'a')
+		{
+			cout << endl;
+			cout << "input : " << input1 << endl;
+		}
+		else if(input1 == 27)
+		{	
+			char input2,input3;
+			cin >> input2;
+			cin >> input3;
+			if ((input1 == 27) and (input2 == 91)) 
+			{
+				cout << endl;
+				cout << "input : " << input3 << endl;
+			}
 
+		}
 		// Using 3 char type, Cause up down right left consist with 3 character
-		if ((first == 27) and (second == 91)) 
+		/*if ((first == 27) and (second == 91)) 
 		{
 			if(check_correct_input_move_type_player1(move_type, input_move_type))
 				change_move_type_player1(move_type, input_move_type);
-		}
-	//	this_thread::sleep_for(chrono::milliseconds(EASY));
+		}*/
+		//this_thread::sleep_for(chrono::milliseconds(EASY));
 	}
 }
 			
@@ -472,10 +486,10 @@ int main()
 	// Primitive Print
 	print_page(page, score1, score2);
 
-	thread thread_for_read_input(read_input_player1, ref(move_type_player1), ref(end_game)); ///////////////////////////
-
+	thread thread_for_read_input(read_input, ref(move_type_player1), ref(end_game)); ///////////////////////////
+	 thread_for_read_input.join();
 	// Every time snake move
-	while(true)
+/*	while(true)
 	{
 		this_thread::sleep_for(chrono::milliseconds(EASY));
 
@@ -580,5 +594,5 @@ int main()
 		}
 
 		print_page(page, score1, score2);
-	}
+	}*/
 }
