@@ -265,7 +265,7 @@ void message_game_over(string player)
 		cout << player << " GAME OVER" << endl;
 }
 
-void cut_snake_tail(vector<pair<int, int>>& snake_coordinates)
+void GET_NOT_SCORE(vector<pair<int, int>>& snake_coordinates)
 {
 	snake_coordinates.pop_back();	
 }
@@ -365,7 +365,7 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 void menu(bool& two_player_game)
 {
 	string num = "0";
-	while(stoi(num) != 1 and stoi(num) != 2)
+	while(num != "1" and num != "2")
 	{
 		system("clear");
 		cout << "********(" << "MENU" << ")********" << endl;
@@ -374,9 +374,7 @@ void menu(bool& two_player_game)
 		cout << "**********************" << endl;
 		cout << "Select the number you want : ";
 		cin >> num;
-		if(num[0] <= 48 or num[0] >= 57)
-			num = "0";
-		else if(stoi(num) == 2)
+		if(num == "2")
 			two_player_game = true;
 	}
 }
@@ -520,13 +518,13 @@ int main()
 			if(check_get_score(snake_coordinates_player1, food_coordinates))
 				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
 			else
-				cut_snake_tail(snake_coordinates_player1);
+				GET_NOT_SCORE(snake_coordinates_player1);
 
 			// PLAYER 2
 			if(check_get_score(snake_coordinates_player2, food_coordinates))
 				GET_SCORE(page, food_coordinates, empty, food, score2, value_score);
 			else
-				cut_snake_tail(snake_coordinates_player2);
+				GET_NOT_SCORE(snake_coordinates_player2);
 
 			print_page(page, score1, score2, two_player_game);
 		}
@@ -555,7 +553,7 @@ int main()
 			if(check_get_score(snake_coordinates_player1, food_coordinates))
 				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
 			else
-				cut_snake_tail(snake_coordinates_player1);
+				GET_NOT_SCORE(snake_coordinates_player1);
 
 			print_page(page, score1, score2, two_player_game);
 		}
