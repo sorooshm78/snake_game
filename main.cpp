@@ -345,7 +345,7 @@ bool check_correct_input_move_type_player2(string& move_type, char input_move_ty
 	return true;
 }
 
-void read_input(string& move_type, atomic<bool>& end_game)
+void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 {
 	while(!end_game)
 	{	
@@ -355,59 +355,32 @@ void read_input(string& move_type, atomic<bool>& end_game)
 		t.c_lflag &= ~ICANON;
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-		// Once the buffering is turned off, the rest is simple.
-		char input1;//,input2,input3;
-		
+		char input1, input2, input3;		
 		cin >> input1;
+		
+		// PLAYER 2
 		if(input1 == 'w' or input1 == 's' or input1 == 'd' or input1 == 'a')
 		{
-			cout << endl;
-			cout << "input : " << input1 << endl;
+			if(check_correct_input_move_type_player2(move_type2, input1))
+				change_move_type_player2(move_type2, input1);
 		}
-		else if(input1 == 27)
+
+		// PLAYER 1
+		if(input1 == 27)
 		{	
-			char input2,input3;
 			cin >> input2;
 			cin >> input3;
-			if ((input1 == 27) and (input2 == 91)) 
+			if (input2 == 91) 
 			{
-				cout << endl;
-				cout << "input : " << input3 << endl;
+				if(check_correct_input_move_type_player1(move_type1, input3))
+					change_move_type_player1(move_type1, input3);
 			}
 
 		}
-		// Using 3 char type, Cause up down right left consist with 3 character
-		/*if ((first == 27) and (second == 91)) 
-		{
-			if(check_correct_input_move_type_player1(move_type, input_move_type))
-				change_move_type_player1(move_type, input_move_type);
-		}*/
-		//this_thread::sleep_for(chrono::milliseconds(EASY));
+//		this_thread::sleep_for(chrono::milliseconds(EASY));
 	}
 }
 			
-void read_input_player2(string& move_type)
-{
-	while (true)
-	{	
-		// Black magic to prevent Linux from buffering keystrokes.
-		struct termios t;
-		tcgetattr(STDIN_FILENO, &t);
-		t.c_lflag &= ~ICANON;
-		tcsetattr(STDIN_FILENO, TCSANOW, &t);
-
-		char input_move_type;
-		// Get input move type
-		cin >> input_move_type;
-
-		// Check correct input and if correct moved
-		if(check_correct_input_move_type_player2(move_type, input_move_type))
-			change_move_type_player2(move_type, input_move_type);
-
-		this_thread::sleep_for(chrono::milliseconds(1000));
-	}
-}
-
 void menu(bool& two_player_game)
 {
 	int num = 1;
@@ -486,10 +459,10 @@ int main()
 	// Primitive Print
 	print_page(page, score1, score2);
 
-	thread thread_for_read_input(read_input, ref(move_type_player1), ref(end_game)); ///////////////////////////
-	 thread_for_read_input.join();
+	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); ///////////////////////////
+
 	// Every time snake move
-/*	while(true)
+	while(true)
 	{
 		this_thread::sleep_for(chrono::milliseconds(EASY));
 
@@ -594,5 +567,5 @@ int main()
 		}
 
 		print_page(page, score1, score2);
-	}*/
+	}
 }
