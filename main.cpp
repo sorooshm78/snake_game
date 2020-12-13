@@ -288,9 +288,9 @@ void message_game_over(string player)
 {
 	cout << endl;
 	if(player == "EQUAL")
-		cout << "EQUAL" << endl;
+		cout << "\t\t\tEQUAL GAME\t\t\t" << endl;
 	else	 
-		cout << player << " GAME OVER" << endl;
+		cout << "\t\t\t" << player << " GAME OVER\t\t\t" << endl;
 }
 
 void GET_NOT_SCORE(vector<pair<int, int>>& snake_coordinates)
@@ -298,9 +298,9 @@ void GET_NOT_SCORE(vector<pair<int, int>>& snake_coordinates)
 	snake_coordinates.pop_back();	
 }
 
-void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
+void read_input(string& move_type1,string& move_type2, atomic<bool>& END_GAME)
 {
-	while(!end_game)
+	while(!END_GAME)
 	{	
 		// Black magic to prevent Linux from buffering keystrokes.
 		struct termios t;
@@ -308,23 +308,23 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 		t.c_lflag &= ~ICANON;
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-		char input1, input2, input3;		
-		cin >> input1;
+		char input_char1, input_char2, input_char3;		
+		cin >> input_char1;
 		
 		// PLAYER 2
-		if(input1 == 'w' or input1 == 's' or input1 == 'd' or input1 == 'a')
-			change_move_type_player2(move_type2, input1);
+		if(input_char1 == 'w' or input_char1 == 's' or input_char1 == 'd' or input_char1 == 'a')
+			change_move_type_player2(move_type2, input_char1);
 
 		// PLAYER 1
-		if(input1 == 27)
+		if(input_char1 == 27)
 		{	
-			cin >> input2;
-			cin >> input3;
-			if (input2 == 91) 
-				change_move_type_player1(move_type1, input3);
+			cin >> input_char2;
+			cin >> input_char3;
+			if (input_char2 == 91) 
+				change_move_type_player1(move_type1, input_char3);
 
 		}
-//		this_thread::sleep_for(chrono::milliseconds(EASY));
+		//this_thread::sleep_for(chrono::milliseconds(EASY));
 	}
 }
 			
@@ -392,7 +392,7 @@ int main()
 	srand(time(0));
 
 	// Configure setting snake game
-	atomic<bool> end_game {false};
+	atomic<bool> END_GAME {false};
 	vector<pair<int, int>> snake_coordinates_player1;
 	vector<pair<int, int>> snake_coordinates_player2;
 	vector<pair<int, int>> food_coordinates;
@@ -406,7 +406,7 @@ int main()
 	string snake1 = "+";
 	string snake2 = "O";
 	string food = "*";
-	int length_page = 30;
+	int lenght_page = 30;
 	int value_score = 1;
 	int width_page = 20;
  	int count_food = 1;
@@ -418,7 +418,7 @@ int main()
 	menu(two_player_game);
 	
 	// Initialize Primitive Game Page
-	initialize_page(page, length_page, width_page, empty);
+	initialize_page(page, lenght_page, width_page, empty);
 	initialize_margins_page(page, margins);
 	initialize_snake_in_page(page, snake_coordinates_player1, snake1, snake_coordinates_player2, snake2, snake_size, two_player_game);
 	insert_food_in_page(page, food_coordinates, empty, food, count_food);
@@ -426,7 +426,7 @@ int main()
 	// Primitive Print
 	print_page(page, score1, score2, two_player_game);
 
-	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); 
+	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(END_GAME)); 
 
 
 	// Each time the snake moves
@@ -445,7 +445,7 @@ int main()
 
 		if(check_crash_to_self_body(snake_coordinates_player1))
 		{
-			GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
+			GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);	
 			return 0;
 		}
 
@@ -465,27 +465,27 @@ int main()
 
 			if(check_crash_to_self_body(snake_coordinates_player2))
 			{
-				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
+				GAME_OVER("PLAYER 2", END_GAME, thread_for_read_input);	
 				return 0;
 			}
 
 			// PLAYER 1
 			if(check_crash_together_body(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
 			{
-				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
+				GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);	
 				return 0;
 			}
 			
 			// PLAYER 2
 			if(check_crash_together_body(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
 			{
-				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
+				GAME_OVER("PLAYER 2", END_GAME, thread_for_read_input);	
 				return 0;
 			}
 
 			if(check_crash_head_by_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
-				GAME_OVER(loser_crash_head_by_head(score1, score2), end_game, thread_for_read_input);	
+				GAME_OVER(loser_crash_head_by_head(score1, score2), END_GAME, thread_for_read_input);	
 				return 0;
 			}	
 
