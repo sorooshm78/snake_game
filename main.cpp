@@ -364,7 +364,7 @@ bool check_crash_head_by_head(vector<pair<int, int>>& snake_coordinates1, vector
 	return false;
 }
 
-string which_loser(int score1, int score2)
+string loser_crash_head_by_head(int score1, int score2)
 {
 	if(score1 == score2)
 		return string("EQUAL");
@@ -485,7 +485,7 @@ int main()
 
 			if(check_crash_head_by_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
-				GAME_OVER(which_loser(score1, score2), end_game, thread_for_read_input);	
+				GAME_OVER(loser_crash_head_by_head(score1, score2), end_game, thread_for_read_input);	
 				return 0;
 			}	
 
