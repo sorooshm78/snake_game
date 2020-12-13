@@ -105,7 +105,6 @@ void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& 
 	}
 }
 
-
 void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 {
 	int x_head_snake = snake_coordinates[0].second;
@@ -124,32 +123,32 @@ void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));
 }
 
-void check(string& move_type, string& last_move)
+void to_corruct_move_type(string& move_type, string& last_move)
 {
+	// RIGHT
 	if(move_type == "left" and last_move == "right")
 	{
-		// RIGHT
 		move_type = "right";
 		return;
 	}
 	
+	// LEFT
 	if(move_type == "right" and last_move == "left")
 	{
-		// LEFT
 		move_type = "left";
 		return;
 	}
 
+	// DOWN
 	if(move_type == "up" and last_move == "down")
 	{
-		// DOWN
 		move_type = "down";
 		return;
 	}
 
+	// UP
 	if(move_type == "down" and last_move == "up")
 	{
-		// UP
 		move_type = "up";
 		return;
 	}
@@ -299,62 +298,6 @@ void GET_NOT_SCORE(vector<pair<int, int>>& snake_coordinates)
 	snake_coordinates.pop_back();	
 }
 
-bool check_correct_input_move_type_player1(string& move_type, char input_move_type)
-{
-	if(move_type == "left" and input_move_type == KEY_RIGHT)
-	{	
-		move_type == "left";
-		return false;
-	}
-	
-	if(move_type == "right" and input_move_type == KEY_LEFT)
-	{	
-		move_type == "right";
-		return false;
-	}
-
-	if(move_type == "up" and input_move_type == KEY_DOWN)
-	{	
-		move_type == "up";
-		return false;
-	}
-	
-	if(move_type == "down" and input_move_type == KEY_UP)
-	{
-		move_type == "down";
-		return false;
-	}
-	return true;
-}
-
-bool check_correct_input_move_type_player2(string& move_type, char input_move_type)
-{
-	if(move_type == "left" and input_move_type == 'd')
-	{	
-		move_type == "left";
-		return false;
-	}
-	
-	if(move_type == "right" and input_move_type == 'a')
-	{	
-		move_type == "right";
-		return false;
-	}
-
-	if(move_type == "up" and input_move_type == 's')
-	{	
-		move_type == "up";
-		return false;
-	}
-	
-	if(move_type == "down" and input_move_type == 'w')
-	{
-		move_type == "down";
-		return false;
-	}
-	return true;
-}
-
 void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 {
 	while(!end_game)
@@ -370,10 +313,7 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 		
 		// PLAYER 2
 		if(input1 == 'w' or input1 == 's' or input1 == 'd' or input1 == 'a')
-		{
-			if(check_correct_input_move_type_player2(move_type2, input1))
-				change_move_type_player2(move_type2, input1);
-		}
+			change_move_type_player2(move_type2, input1);
 
 		// PLAYER 1
 		if(input1 == 27)
@@ -381,10 +321,7 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 			cin >> input2;
 			cin >> input3;
 			if (input2 == 91) 
-			{
-				//if(check_correct_input_move_type_player1(move_type1, input3))
-					change_move_type_player1(move_type1, input3);
-			}
+				change_move_type_player1(move_type1, input3);
 
 		}
 //		this_thread::sleep_for(chrono::milliseconds(EASY));
@@ -461,8 +398,9 @@ int main()
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
 	string move_type_player1 = "left"; 
-	string last_move1 = "left"; 
 	string move_type_player2 = "left";
+	string last_move1 = "left"; 
+	string last_move2 = "left";
 	string margins = "#";
 	string empty = ".";
 	string snake1 = "+";
@@ -499,9 +437,12 @@ int main()
 
 			clear_page_from_snake(page, empty, snake1, snake2);
 					
-			//move(snake_coordinates_player1, move_type_player1, last_move1);
-			//move(snake_coordinates_player2, move_type_player2, last_move1);
-			
+			to_corruct_move_type(move_type_player1, last_move1);
+			move(snake_coordinates_player1, move_type_player1);
+
+			to_corruct_move_type(move_type_player2, last_move2);
+			move(snake_coordinates_player2, move_type_player2);
+
 			handle_crash_wall(page, snake_coordinates_player1);
 			handle_crash_wall(page, snake_coordinates_player2);
 
@@ -567,11 +508,9 @@ int main()
 			this_thread::sleep_for(chrono::milliseconds(EASY));
 
 			clear_page_from_snake(page, empty, snake1, snake2);
-
-			check(move_type_player1, last_move1);
-			move(snake_coordinates_player1, move_type_player1);
 			
-			//move(snake_coordinates_player1, move_type_player1, last_move1);
+			to_corruct_move_type(move_type_player1, last_move1);
+			move(snake_coordinates_player1, move_type_player1);
 			
 			handle_crash_wall(page, snake_coordinates_player1);
 
