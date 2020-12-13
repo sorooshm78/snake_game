@@ -105,26 +105,55 @@ void insert_snake_in_page(vector<vector<string>>& page, vector<pair<int, int>>& 
 	}
 }
 
+
 void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
 	
-	// Snake move to LEFT 
 	if(move_type == "left")
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));	
-
-	// Snake move to RIGHT 
-	if(move_type == "right")
-			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));
 	
-	// Snake move to UP
+	if(move_type == "right")
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));
+	
 	if(move_type == "up")
-			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
-
-	// Snake move to DOWN 
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));
+	
 	if(move_type == "down")
-			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));
+}
+
+void check(string& move_type, string& last_move)
+{
+	if(move_type == "left" and last_move == "right")
+	{
+		// RIGHT
+		move_type = "right";
+		return;
+	}
+	
+	if(move_type == "right" and last_move == "left")
+	{
+		// LEFT
+		move_type = "left";
+		return;
+	}
+
+	if(move_type == "up" and last_move == "down")
+	{
+		// DOWN
+		move_type = "down";
+		return;
+	}
+
+	if(move_type == "down" and last_move == "up")
+	{
+		// UP
+		move_type = "up";
+		return;
+	}
+	last_move = move_type;
 }
 
 void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& snake1, string& snake2)
@@ -353,7 +382,7 @@ void read_input(string& move_type1,string& move_type2, atomic<bool>& end_game)
 			cin >> input3;
 			if (input2 == 91) 
 			{
-				if(check_correct_input_move_type_player1(move_type1, input3))
+				//if(check_correct_input_move_type_player1(move_type1, input3))
 					change_move_type_player1(move_type1, input3);
 			}
 
@@ -432,6 +461,7 @@ int main()
 	vector<pair<int, int>> food_coordinates;
 	vector<vector<string>> page;
 	string move_type_player1 = "left"; 
+	string last_move1 = "left"; 
 	string move_type_player2 = "left";
 	string margins = "#";
 	string empty = ".";
@@ -469,8 +499,8 @@ int main()
 
 			clear_page_from_snake(page, empty, snake1, snake2);
 					
-			move(snake_coordinates_player1, move_type_player1);
-			move(snake_coordinates_player2, move_type_player2);
+			//move(snake_coordinates_player1, move_type_player1, last_move1);
+			//move(snake_coordinates_player2, move_type_player2, last_move1);
 			
 			handle_crash_wall(page, snake_coordinates_player1);
 			handle_crash_wall(page, snake_coordinates_player2);
@@ -537,8 +567,11 @@ int main()
 			this_thread::sleep_for(chrono::milliseconds(EASY));
 
 			clear_page_from_snake(page, empty, snake1, snake2);
-				
+
+			check(move_type_player1, last_move1);
 			move(snake_coordinates_player1, move_type_player1);
+			
+			//move(snake_coordinates_player1, move_type_player1, last_move1);
 			
 			handle_crash_wall(page, snake_coordinates_player1);
 
