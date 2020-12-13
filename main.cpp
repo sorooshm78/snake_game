@@ -214,7 +214,7 @@ void add_score(int& score, int value)
 	score += value;
 }
 
-bool check_game_over(vector<pair<int, int>>& snake_coordinates)
+bool check_crash_to_self_body(vector<pair<int, int>>& snake_coordinates)
 {
 	int x_head_snake = snake_coordinates[0].second;
 	int y_head_snake = snake_coordinates[0].first;
@@ -345,7 +345,7 @@ void menu(bool& two_player_game)
 	}
 }
 
-bool check_crash_together(int x_head_snake, int y_head_snake, vector<pair<int, int>>& snake_coordinates)
+bool check_crash_together_body(int x_head_snake, int y_head_snake, vector<pair<int, int>>& snake_coordinates)
 {
 	for(size_t i = 1 ; i < snake_coordinates.size() ; i++)
 	{
@@ -357,7 +357,7 @@ bool check_crash_together(int x_head_snake, int y_head_snake, vector<pair<int, i
 	return false;
 }
 
-bool check_crash_head_to_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2)
+bool check_crash_head_by_head(vector<pair<int, int>>& snake_coordinates1, vector<pair<int, int>>& snake_coordinates2)
 {
 	if(snake_coordinates1[0].first == snake_coordinates2[0].first and snake_coordinates1[0].second == snake_coordinates2[0].second)
 		return true;
@@ -404,7 +404,7 @@ int main()
 	string margins = "#";
 	string empty = ".";
 	string snake1 = "+";
-	string snake2 = "@";
+	string snake2 = "O";
 	string food = "*";
 	int length_page = 30;
 	int value_score = 1;
@@ -426,108 +426,75 @@ int main()
 	// Primitive Print
 	print_page(page, score1, score2, two_player_game);
 
-	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); ///////////////////////////
+	thread thread_for_read_input(read_input, ref(move_type_player1), ref(move_type_player2), ref(end_game)); 
 
-	// TWO PLAYER GAME
-	if(two_player_game == true)
+
+	// Each time the snake moves
+	while(true)
 	{
-		while(true)
+		this_thread::sleep_for(chrono::milliseconds(EASY));
+
+		clear_page_from_snake(page, empty, snake1, snake2);
+		
+		to_corruct_move_type(move_type_player1, last_move1);
+		move(snake_coordinates_player1, move_type_player1);
+		
+		handle_crash_wall(page, snake_coordinates_player1);
+
+		insert_snake_in_page(page, snake_coordinates_player1, snake1);
+
+		if(check_crash_to_self_body(snake_coordinates_player1))
 		{
-			this_thread::sleep_for(chrono::milliseconds(EASY));
+			GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
+			return 0;
+		}
 
-			clear_page_from_snake(page, empty, snake1, snake2);
-					
-			to_corruct_move_type(move_type_player1, last_move1);
-			move(snake_coordinates_player1, move_type_player1);
-
+		if(check_get_score(snake_coordinates_player1, food_coordinates))
+			GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
+		else
+			GET_NOT_SCORE(snake_coordinates_player1);
+		
+		if(two_player_game == true)
+		{
 			to_corruct_move_type(move_type_player2, last_move2);
 			move(snake_coordinates_player2, move_type_player2);
-
-			handle_crash_wall(page, snake_coordinates_player1);
+			
 			handle_crash_wall(page, snake_coordinates_player2);
 
-			insert_snake_in_page(page, snake_coordinates_player1, snake1);
 			insert_snake_in_page(page, snake_coordinates_player2, snake2);
 
-
-			// PLAYER 1
-			if(check_game_over(snake_coordinates_player1))
-			{
-				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
-				return 0;
-			}
-
-			// PLAYER 2
-			if(check_game_over(snake_coordinates_player2))
+			if(check_crash_to_self_body(snake_coordinates_player2))
 			{
 				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
 				return 0;
 			}
 
 			// PLAYER 1
-			if(check_crash_together(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
+			if(check_crash_together_body(snake_coordinates_player1[0].second, snake_coordinates_player1[0].first, snake_coordinates_player2))
 			{
 				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
 				return 0;
 			}
 			
 			// PLAYER 2
-			if(check_crash_together(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
+			if(check_crash_together_body(snake_coordinates_player2[0].second, snake_coordinates_player2[0].first, snake_coordinates_player1))
 			{
 				GAME_OVER("PLAYER 2", end_game, thread_for_read_input);	
 				return 0;
 			}
 
-			// PLAYER 1 and PLAYER 2
-			if(check_crash_head_to_head(snake_coordinates_player1, snake_coordinates_player2))
+			if(check_crash_head_by_head(snake_coordinates_player1, snake_coordinates_player2))
 			{
 				GAME_OVER(which_loser(score1, score2), end_game, thread_for_read_input);	
 				return 0;
 			}	
 
-			// PLAYER 1
-			if(check_get_score(snake_coordinates_player1, food_coordinates))
-				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
-			else
-				GET_NOT_SCORE(snake_coordinates_player1);
-
-			// PLAYER 2
 			if(check_get_score(snake_coordinates_player2, food_coordinates))
 				GET_SCORE(page, food_coordinates, empty, food, score2, value_score);
 			else
-				GET_NOT_SCORE(snake_coordinates_player2);
-
-			print_page(page, score1, score2, two_player_game);
+				GET_NOT_SCORE(snake_coordinates_player2);			
 		}
-	}
-	else
-	{
-		// ONE PLAYER GAME
-		while(true)
-		{
-			this_thread::sleep_for(chrono::milliseconds(EASY));
 
-			clear_page_from_snake(page, empty, snake1, snake2);
-			
-			to_corruct_move_type(move_type_player1, last_move1);
-			move(snake_coordinates_player1, move_type_player1);
-			
-			handle_crash_wall(page, snake_coordinates_player1);
-
-			insert_snake_in_page(page, snake_coordinates_player1, snake1);
-
-			if(check_game_over(snake_coordinates_player1))
-			{
-				GAME_OVER("PLAYER 1", end_game, thread_for_read_input);	
-				return 0;
-			}
-
-			if(check_get_score(snake_coordinates_player1, food_coordinates))
-				GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
-			else
-				GET_NOT_SCORE(snake_coordinates_player1);
-
-			print_page(page, score1, score2, two_player_game);
-		}
+		print_page(page, score1, score2, two_player_game);
 	}
 }
