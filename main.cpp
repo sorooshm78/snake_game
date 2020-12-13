@@ -112,19 +112,19 @@ void move(vector<pair<int, int>>& snake_coordinates, string& move_type)
 	
 	// Snake move to LEFT 
 	if(move_type == "left")
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));		
-	
+		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake - 1));	
+
 	// Snake move to RIGHT 
 	if(move_type == "right")
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
-
+			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake, x_head_snake + 1));		
+	
 	// Snake move to UP
 	if(move_type == "up")
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
+			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake - 1, x_head_snake));		
 
 	// Snake move to DOWN 
 	if(move_type == "down")
-		snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
+			snake_coordinates.insert(snake_coordinates.begin(), pair<int, int>(y_head_snake + 1, x_head_snake));		
 }
 
 void clear_page_from_snake(vector<vector<string>>& page, string& empty, string& snake1, string& snake2)
