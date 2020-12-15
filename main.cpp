@@ -34,6 +34,9 @@
 #define BOLDWHITE   "\033[1m\033[37m"      
 
 #define EASY 300
+#define MEDIUM 200
+#define HARD 100
+
 
 using namespace std;
 
@@ -459,7 +462,7 @@ int main()
 	// Each time the snake moves
 	while(true)
 	{
-		this_thread::sleep_for(chrono::milliseconds(EASY));
+		this_thread::sleep_for(chrono::milliseconds(MEDIUM));
 
 		clear_page_from_snake(page, empty, snake1, snake2);
 		
