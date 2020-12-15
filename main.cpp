@@ -443,6 +443,7 @@ int main()
 	int snake_size = 5;
 	int score1 = 0;
 	int score2 = 0;
+	int LEVEL = MEDIUM;
 	bool two_player_game = false;
 
 	menu(two_player_game);
@@ -462,7 +463,7 @@ int main()
 	// Each time the snake moves
 	while(true)
 	{
-		this_thread::sleep_for(chrono::milliseconds(MEDIUM));
+		this_thread::sleep_for(chrono::milliseconds(LEVEL));
 
 		clear_page_from_snake(page, empty, snake1, snake2);
 		
