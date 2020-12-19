@@ -11,14 +11,14 @@ snake(int x, int y)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
-		coordinates.push_back(pair<int, int>(x + 1, y));
+		coordinates.push_back(pair<int, int>(x + i, y));
 	}
 }
 
 //private:
 	vector<pair<int, int>> coordinates;
 	char shape = '*';
-	int primitive_size = 4;
+	int primitive_size = 5;
 	int score = 0;
 };
 
@@ -31,7 +31,7 @@ void print(snake *s)
 	{
 		for(int x = 0; x < lenght; x++)
 		{
-			bool flag = true;
+			bool print_empty = true;
 			// margins
 			if(x == 0 or y == 0 or x == lenght - 1 or y == width - 1)
 			{
@@ -44,13 +44,13 @@ void print(snake *s)
 			{
 				if(x == s->coordinates[i].first and y == s->coordinates[i].second)
 				{
-					flag = false;
+					print_empty = false;
 					cout << s->shape << " ";
-					//break;
+					break;
 				}
 			}
 
-			if(flag)
+			if(print_empty)
 			{
 				cout << empty_shape << " ";
 			}
@@ -60,8 +60,8 @@ void print(snake *s)
 }
 
 private:
-	int lenght = 10;
-	int width = 5;
+	int lenght = 30;
+	int width = 20;
 	char margins_shape = '#';
 	char empty_shape = '.';
 };
@@ -77,7 +77,7 @@ private:
 
 int main()
 {
-	snake s(2, 2);
+	snake s(5, 5);
 	page p;
 	p.print(&s);
 }
