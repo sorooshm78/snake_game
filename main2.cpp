@@ -1,11 +1,39 @@
+#include <termios.h>
 #include <iostream>
-#include <vector>
-#include <string>
-#include <time.h>
 #include <stdlib.h>
+#include <thread>
+#include <chrono>
+#include <string>
+#include <vector>
+#include <time.h>
 #include <atomic>
 
+#define STDIN_FILENO 0
+
+#define KEY_UP 65
+#define KEY_DOWN 66
+#define KEY_RIGHT 67
+#define KEY_LEFT 68
+
+#define EASY 300
+#define MEDIUM 200
+#define HARD 100
+
 using namespace std;
+
+class page;
+class food;
+class snake;
+
+class food
+{
+public:
+	int get_count(){ return count;}
+//private:
+	vector<pair<int, int>> coordinates;
+	int count = 1;
+	char shape = '*';
+};
 
 class snake
 {
@@ -17,6 +45,74 @@ snake(int x, int y)
 		coordinates.push_back(pair<int, int>(x + i, y));
 	}
 }
+
+bool check_get_score(food *f)
+{
+    int x_head_snake = coordinates[0].first;
+    int y_head_snake = coordinates[0].second;
+
+    for(size_t i = 0; i < coordinates.size(); i++)
+    {
+        if(f->coordinates[i].first ==  x_head_snake and f->coordinates[i].second ==  y_head_snake)
+        {
+            // Delete food from coordinates
+            f->coordinates.erase(f->coordinates.begin() + i);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool check_crash_to_self_body()
+{
+    int x_head_snake = coordinates[0].first;
+    int y_head_snake = coordinates[0].second;
+
+    for(size_t i = 1; i < coordinates.size(); i++)
+    {
+        if(x_head_snake == coordinates[i].first and y_head_snake == coordinates[i].second)
+            return true;
+    }
+    return false;
+}
+
+void GET_SCORE()
+{
+	score += food_value;
+}
+
+void GET_NOT_SCORE()
+{
+	coordinates.pop_back();
+}
+
+void handle_crash_wall(int lenght, int width) 
+{
+    int x_head_snake = coordinates[0].first;
+    int y_head_snake = coordinates[0].second;
+
+    int margins_up = 0;
+    int margins_down = width - 1;
+    int margins_left = 0;
+    int margins_right = lenght - 1;
+
+    // Wall left
+    if(x_head_snake == margins_left)
+         coordinates[0].first = margins_right - 1;
+
+    // Wall right
+    if(x_head_snake == margins_right)
+         coordinates[0].first = margins_left + 1;
+
+    // Wall up
+    if(y_head_snake == margins_up)
+         coordinates[0].second = margins_down - 1;
+
+    // Wall down
+    if(y_head_snake == margins_down)
+         coordinates[0].second = margins_up + 1;
+}
+
 
 void move(string& move_type)
 {
@@ -68,29 +164,27 @@ void to_corruct_move_type(string& move_type)
     last_move = move_type;
 }
 
+int get_score() {return score;}
 //private:
 	vector<pair<int, int>> coordinates;
 	char shape = '+';
 	int primitive_size = 5;
 	int score = 0;
+	int food_value = 1;
 	string last_move = "left";
 };
 
-class food
-{
-public:
 
-//private:
-	vector<pair<int, int>> coordinates;
-	int count = 1;
-	char shape = '*';
-};
 
 class page
 {
 public:
 void print(snake *s, food *f)
 {
+	system("clear");
+	cout << "player 1" << endl;
+	cout << "score: "<< s->get_score() << endl;
+
 	for(int y = 0; y < width; y++)
 	{
 		for(int x = 0; x < lenght; x++)
@@ -144,6 +238,7 @@ private:
 	char empty_shape = '.';
 };
 
+
 bool check_corruct_coordinates(int x_food, int y_food, snake *s)
 {
 	for(int i = 0; i < s->coordinates.size(); i++)
@@ -154,14 +249,14 @@ bool check_corruct_coordinates(int x_food, int y_food, snake *s)
 	return true;
 }
 
-void insert_food(page *p, snake *s, food *f)
+void insert_food(snake *s, food *f, int lenght, int width, int count) 
 {
-	for(int i = 0; i < f->count; i++)
+	for(int i = 0; i < count; i++)
 	{
         while(true)
         {
-			int x_food = rand() % (p->get_lenght() - 3) + 2;
-            int y_food = rand() % (p->get_width() - 3) + 2;
+			int x_food = rand() % (lenght - 3) + 2;
+            int y_food = rand() % (width - 3) + 2;
 							
 			if(check_corruct_coordinates(x_food, y_food, s))
 	        {	
@@ -187,6 +282,22 @@ void change_move_type_player1(string& move_type, char input_move_type)
         move_type = "right";
 }
 
+void message_game_over(string player)
+{
+    cout << endl;
+    if(player == "EQUAL")
+        cout << "\t\t\tEQUAL GAME\t\t\t" << endl;
+    else     
+        cout << "\t\t\t" << player << " GAME OVER\t\t\t" << endl;
+}
+
+void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input)
+{
+    message_game_over(player);
+    end_game = true;
+    thread_for_read_input.join();
+}
+
 void read_input(string& move_type1, atomic<bool>& END_GAME)
 {
     while(!END_GAME)
@@ -197,14 +308,10 @@ void read_input(string& move_type1, atomic<bool>& END_GAME)
         t.c_lflag &= ~ICANON;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
+
         char input_char1, input_char2, input_char3;
         cin >> input_char1;
 
-/*        // PLAYER 2
-        if(input_char1 == 'w' or input_char1 == 's' or input_char1 == 'd' or input_char1 == 'a')
-           change_move_type_player2(move_type2, input_char1);
-*/
-        // PLAYER 1
         if(input_char1 == 27)
         {
             cin >> input_char2;
@@ -216,35 +323,20 @@ void read_input(string& move_type1, atomic<bool>& END_GAME)
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int main()
 {
 	srand(time(0));	
 
 	atomic<bool> END_GAME {false};
 	string move_type_player1 = "left";
+	int LEVEL = EASY;
 	snake s(5, 5);
 	food f;
 	page p;
 
-	insert_food(&p, &s, &f);
+	insert_food(&s, &f, p.get_lenght(), p.get_width(), f.get_count());
 
+	thread thread_for_read_input(read_input, ref(move_type_player1), ref(END_GAME));
 
     while(true)
     {
@@ -253,19 +345,22 @@ int main()
         s.to_corruct_move_type(move_type_player1);
         s.move(move_type_player1);
 
-        handle_crash_wall(page, snake_coordinates_player1);
+        s.handle_crash_wall(p.get_lenght(), p.get_width());
 
-        insert_snake_in_page(page, snake_coordinates_player1, snake1);
-
-        if(check_crash_to_self_body(snake_coordinates_player1))
+	    if(s.check_crash_to_self_body())
         {
             GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);
             return 0;
         }
 
-        if(check_get_score(snake_coordinates_player1, food_coordinates))
-            GET_SCORE(page, food_coordinates, empty, food, score1, value_score);
+        if(s.check_get_score(&f))
+        {   
+			s.GET_SCORE();
+			insert_food(&s, &f, p.get_lenght(), p.get_width(), 1); 					
+		}
         else
-            GET_NOT_SCORE(snake_coordinates_player1);
+            s.GET_NOT_SCORE();
+
+		p.print(&s, &f);
 	}
 }
