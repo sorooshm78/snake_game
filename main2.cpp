@@ -15,6 +15,24 @@
 #define KEY_RIGHT 67
 #define KEY_LEFT 68
 
+#define RESET       "\033[0m"
+#define BLACK       "\033[30m"      
+#define RED         "\033[31m"     
+#define GREEN       "\033[32m"     
+#define YELLOW      "\033[33m"     
+#define BLUE        "\033[34m"     
+#define MAGENTA     "\033[35m"     
+#define CYAN        "\033[36m"     
+#define WHITE       "\033[37m"     
+#define BOLDBLACK   "\033[1m\033[30m"     
+#define BOLDRED     "\033[1m\033[31m"     
+#define BOLDGREEN   "\033[1m\033[32m"     
+#define BOLDYELLOW  "\033[1m\033[33m"    
+#define BOLDBLUE    "\033[1m\033[34m"     
+#define BOLDMAGENTA "\033[1m\033[35m"    
+#define BOLDCYAN    "\033[1m\033[36m"     
+#define BOLDWHITE   "\033[1m\033[37m"      
+
 #define EASY 300
 #define MEDIUM 200
 #define HARD 100
@@ -32,16 +50,28 @@ class food
 public:
 	bool is_this_the_coordinates_of_food(int x, int y);
 	void add_food(int x, int y);
+	void delete_food(int x, int y);
 	int get_count(){ return count;}
 	char get_shape(){ return shape;}
+	string get_color(){ return color;}
 
-//private:
+private:
 	vector<pair<int, int>> coordinates;
 	int count = 1;
 	char shape = '*';
+	string color = BOLDYELLOW; 
 };
 
-void add_food(int x, int y)
+void food::delete_food(int x, int y)
+{
+	for(size_t i = 0; i < coordinates.size(); i++)
+    {
+        if(x == coordinates[i].first and y == coordinates[i].second)
+            coordinates.erase(coordinates.begin() + i);
+    }
+}
+
+void food::add_food(int x, int y)
 {
 	coordinates.push_back(pair<int, int>(x, y));
 }
@@ -61,7 +91,7 @@ bool food::is_this_the_coordinates_of_food(int x, int y)
 class snake
 {
 public:
-	snake(int x, int y);
+	snake(int x, int y, string name, string color);
 	bool check_crash_to_self_body();
 	void GET_POINT();
 	void GET_NOT_POINT();
@@ -71,17 +101,26 @@ public:
 	bool is_this_the_coordinates_of_snake(int x, int y);
 	int get_score() {return score;}
 	char get_shape() {return shape;}
-	int get_size() {return size();}
-//private:
+	int get_size() {return size;}
+	int get_x_head() {return coordinates[0].first;}
+	int get_y_head() {return coordinates[0].second;}
+	string get_color() {return color;}
+	string get_name() {return name;}
+	
+private:
 	vector<pair<int, int>> coordinates;
 	char shape = '+';
 	int size = 5;
 	int score = 0;
 	int food_value = 1;
 	string last_move = "left";
+	string name = nullptr;
+	string color = BOLDBLUE;
 };
 
-snake::snake(int x, int y)
+snake::snake(int x, int y, string name, string color)
+:color(color)
+,name(name)
 {
 	for(int i = 0; i < size; i++)
 	{
@@ -233,8 +272,8 @@ page::page(snake *Snake, food *Food)
 void page::print()
 {
 	system("clear");
-	cout << "player 1" << endl;
-	cout << "score: "<< s->get_score() << endl;
+	cout << s->get_color() << s->get_name() << RESET << endl;
+	cout << s->get_color() << "score: " << s->get_score() << RESET << endl;
 
 	for(int y = 0; y < width; y++)
 	{
@@ -251,14 +290,14 @@ void page::print()
 			// Snake	
 			if(s->is_this_the_coordinates_of_snake(x, y))
 			{	
-				cout << s->get_shape() << " ";			
+				cout << s->get_color() << s->get_shape() << RESET << " ";			
 				continue;
 			}
 
 			// Food
 			if(f->is_this_the_coordinates_of_food(x, y))
 			{	
-				cout << f->get_shape() << " ";			
+				cout << f->get_color() << f->get_shape() << RESET << " ";			
 				continue;
 			}
 
@@ -277,7 +316,7 @@ void page::insert_food(int count)
 			int x_food = rand() % (lenght - 3) + 2;
             int y_food = rand() % (width - 3) + 2;
 							
-			if(s->is_this_the_coordinates_of_snake(x_food, y_food))
+			if(!s->is_this_the_coordinates_of_snake(x_food, y_food))
 	        {	
 				f->add_food(x_food, y_food);
 				break;
@@ -304,19 +343,15 @@ void page::GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_r
 
 bool page::check_eat_food()
 {
-    int x_head_snake = s->coordinates[0].first;
-    int y_head_snake = s->coordinates[0].second;
+    int x_head_snake = s->get_x_head();
+    int y_head_snake = s->get_y_head();
 
-    for(size_t i = 0; i < s->coordinates.size(); i++)
-    {
-        if(f->coordinates[i].first ==  x_head_snake and f->coordinates[i].second ==  y_head_snake)
-        {
-            // Delete food from coordinates
-            f->coordinates.erase(f->coordinates.begin() + i);
-            return true;
-        }
-    }
-    return false;
+	if(f->is_this_the_coordinates_of_food(x_head_snake, y_head_snake))
+	{
+		f->delete_food(x_head_snake, y_head_snake);
+		return true;
+	}
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -369,10 +404,9 @@ int main()
 	atomic<bool> END_GAME {false};
 	string move_type_player1 = "left";
 	int LEVEL = EASY;
-	snake s(5, 5);
+	snake s(15, 5, "soroosh", BOLDBLUE);
 	food f;
 	page p(&s, &f);
-
 
 	p.insert_food(f.get_count());
 
@@ -389,7 +423,7 @@ int main()
 
 	    if(s.check_crash_to_self_body())
         {
-            p.GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);
+            p.GAME_OVER(s.get_name(), END_GAME, thread_for_read_input);
             return 0;
         }
 
