@@ -30,31 +30,52 @@ class snake;
 class food
 {
 public:
+	bool is_this_the_coordinates_of_food(int x, int y);
+	void add_food(int x, int y);
 	int get_count(){ return count;}
+	char get_shape(){ return shape;}
+
 //private:
 	vector<pair<int, int>> coordinates;
 	int count = 1;
 	char shape = '*';
 };
 
+void add_food(int x, int y)
+{
+	coordinates.push_back(pair<int, int>(x, y));
+}
+
+bool food::is_this_the_coordinates_of_food(int x, int y)
+{
+	for(int i = 0; i < coordinates.size(); i++)
+	{
+		if(x == coordinates[i].first and y == coordinates[i].second)
+			return true;
+	}
+	return false;
+}
+
 //////////////////////////////////////////////////////////////////
 
 class snake
 {
 public:
-snake(int x, int y);
-bool check_crash_to_self_body();
-void GET_SCORE();
-void GET_NOT_SCORE();
-void handle_crash_wall(int lenght, int width);
-void move(string& move_type);
-void to_corruct_move_type(string& move_type);
-int return_score() {return score;}
-
+	snake(int x, int y);
+	bool check_crash_to_self_body();
+	void GET_POINT();
+	void GET_NOT_POINT();
+	void handle_crash_wall(int lenght, int width);
+	void move(string& move_type);
+	void to_corruct_move_type(string& move_type);
+	bool is_this_the_coordinates_of_snake(int x, int y);
+	int get_score() {return score;}
+	char get_shape() {return shape;}
+	int get_size() {return size();}
 //private:
 	vector<pair<int, int>> coordinates;
 	char shape = '+';
-	int primitive_size = 5;
+	int size = 5;
 	int score = 0;
 	int food_value = 1;
 	string last_move = "left";
@@ -62,10 +83,20 @@ int return_score() {return score;}
 
 snake::snake(int x, int y)
 {
-	for(int i = 0; i < primitive_size; i++)
+	for(int i = 0; i < size; i++)
 	{
 		coordinates.push_back(pair<int, int>(x + i, y));
 	}
+}
+
+bool snake::is_this_the_coordinates_of_snake(int x, int y)
+{
+	for(int i = 0; i < coordinates.size(); i++)
+	{
+		if(x == coordinates[i].first and y == coordinates[i].second)
+			return true;
+	}
+	return false; 
 }
 
 bool snake::check_crash_to_self_body()
@@ -81,12 +112,13 @@ bool snake::check_crash_to_self_body()
     return false;
 }
 
-void snake::GET_SCORE()
+void snake::GET_POINT()
 {
 	score += food_value;
+	size ++;
 }
 
-void snake::GET_NOT_SCORE()
+void snake::GET_NOT_POINT()
 {
 	coordinates.pop_back();
 }
@@ -174,15 +206,15 @@ void snake::to_corruct_move_type(string& move_type)
 class page
 {
 public:
-page(snake *Snake, food *Food);
-void print();
-bool check_corruct_food_coordinates(int x_food, int y_food);
-void message_game_over(string player);
-void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input);
-bool check_eat_food();
-void insert_food(int count); 
-int get_lenght(){ return lenght;}
-int get_width(){ return width;}
+	page(snake *Snake, food *Food);
+	void print();
+	bool check_corruct_food_coordinates(int x_food, int y_food);
+	void message_game_over(string player);
+	void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input);
+	bool check_eat_food();
+	void insert_food(int count); 
+	int get_lenght(){ return lenght;}
+	int get_width(){ return width;}
 
 private:
 	snake *s = nullptr;
@@ -202,46 +234,35 @@ void page::print()
 {
 	system("clear");
 	cout << "player 1" << endl;
-	cout << "score: "<< s->return_score() << endl;
+	cout << "score: "<< s->get_score() << endl;
 
 	for(int y = 0; y < width; y++)
 	{
 		for(int x = 0; x < lenght; x++)
 		{
 			bool print_empty = true;
-			// margins
+			// Margins
 			if(x == 0 or y == 0 or x == lenght - 1 or y == width - 1)
 			{
 				cout << margins_shape << " ";
 				continue;
 			}
 
-			// snake
-			for(int i = 0; i < s->coordinates.size(); i++)
-			{
-				if(x == s->coordinates[i].first and y == s->coordinates[i].second)
-				{
-					print_empty = false;
-					cout << s->shape << " ";
-					break;
-				}
+			// Snake	
+			if(s->is_this_the_coordinates_of_snake(x, y))
+			{	
+				cout << s->get_shape() << " ";			
+				continue;
 			}
 
-			// food 
-			for(int i = 0; i < f->coordinates.size(); i++)
-			{
-				if(x == f->coordinates[i].first and y == f->coordinates[i].second)
-				{
-					print_empty = false;
-					cout << f->shape << " ";
-					break;
-				}
+			// Food
+			if(f->is_this_the_coordinates_of_food(x, y))
+			{	
+				cout << f->get_shape() << " ";			
+				continue;
 			}
 
-			if(print_empty)
-			{
-				cout << empty_shape << " ";
-			}
+			cout << empty_shape << " ";
 		}
 		cout << endl;
 	}
@@ -256,23 +277,13 @@ void page::insert_food(int count)
 			int x_food = rand() % (lenght - 3) + 2;
             int y_food = rand() % (width - 3) + 2;
 							
-			if(check_corruct_food_coordinates(x_food, y_food))
+			if(s->is_this_the_coordinates_of_snake(x_food, y_food))
 	        {	
-				f->coordinates.push_back(pair<int, int>(x_food, y_food));
+				f->add_food(x_food, y_food);
 				break;
 			}
         }			
 	}
-}
-
-bool page::check_corruct_food_coordinates(int x_food, int y_food)
-{
-	for(int i = 0; i < s->coordinates.size(); i++)
-	{
-		if(x_food == s->coordinates[i].first and y_food == s->coordinates[i].second)
-			return false;		
-	}
-	return true;
 }
 
 void page::message_game_over(string player)
@@ -384,11 +395,11 @@ int main()
 
         if(p.check_eat_food())
         {   
-			s.GET_SCORE();
+			s.GET_POINT();
 			p.insert_food(1); 					
 		}
         else
-            s.GET_NOT_SCORE();
+            s.GET_NOT_POINT();
 
 		p.print();
 	}
