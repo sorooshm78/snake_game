@@ -25,6 +25,8 @@ class page;
 class food;
 class snake;
 
+//////////////////////////////////////////////////////////////////
+
 class food
 {
 public:
@@ -35,10 +37,30 @@ public:
 	char shape = '*';
 };
 
+//////////////////////////////////////////////////////////////////
+
 class snake
 {
 public:
-snake(int x, int y)
+snake(int x, int y);
+bool check_crash_to_self_body();
+void GET_SCORE();
+void GET_NOT_SCORE();
+void handle_crash_wall(int lenght, int width);
+void move(string& move_type);
+void to_corruct_move_type(string& move_type);
+int return_score() {return score;}
+
+//private:
+	vector<pair<int, int>> coordinates;
+	char shape = '+';
+	int primitive_size = 5;
+	int score = 0;
+	int food_value = 1;
+	string last_move = "left";
+};
+
+snake::snake(int x, int y)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -46,24 +68,7 @@ snake(int x, int y)
 	}
 }
 
-bool check_get_score(food *f)
-{
-    int x_head_snake = coordinates[0].first;
-    int y_head_snake = coordinates[0].second;
-
-    for(size_t i = 0; i < coordinates.size(); i++)
-    {
-        if(f->coordinates[i].first ==  x_head_snake and f->coordinates[i].second ==  y_head_snake)
-        {
-            // Delete food from coordinates
-            f->coordinates.erase(f->coordinates.begin() + i);
-            return true;
-        }
-    }
-    return false;
-}
-
-bool check_crash_to_self_body()
+bool snake::check_crash_to_self_body()
 {
     int x_head_snake = coordinates[0].first;
     int y_head_snake = coordinates[0].second;
@@ -76,17 +81,17 @@ bool check_crash_to_self_body()
     return false;
 }
 
-void GET_SCORE()
+void snake::GET_SCORE()
 {
 	score += food_value;
 }
 
-void GET_NOT_SCORE()
+void snake::GET_NOT_SCORE()
 {
 	coordinates.pop_back();
 }
 
-void handle_crash_wall(int lenght, int width) 
+void snake::handle_crash_wall(int lenght, int width) 
 {
     int x_head_snake = coordinates[0].first;
     int y_head_snake = coordinates[0].second;
@@ -114,7 +119,7 @@ void handle_crash_wall(int lenght, int width)
 }
 
 
-void move(string& move_type)
+void snake::move(string& move_type)
 {
 	int x_head_snake = coordinates[0].first;
     int y_head_snake = coordinates[0].second;
@@ -132,7 +137,7 @@ void move(string& move_type)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake + 1));
 }
 
-void to_corruct_move_type(string& move_type)
+void snake::to_corruct_move_type(string& move_type)
 {
     // RIGHT
     if(move_type == "left" and last_move == "right")
@@ -164,26 +169,40 @@ void to_corruct_move_type(string& move_type)
     last_move = move_type;
 }
 
-int get_score() {return score;}
-//private:
-	vector<pair<int, int>> coordinates;
-	char shape = '+';
-	int primitive_size = 5;
-	int score = 0;
-	int food_value = 1;
-	string last_move = "left";
-};
-
-
+//////////////////////////////////////////////////////////////////
 
 class page
 {
 public:
-void print(snake *s, food *f)
+page(snake *Snake, food *Food);
+void print();
+bool check_corruct_food_coordinates(int x_food, int y_food);
+void message_game_over(string player);
+void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input);
+bool check_eat_food();
+void insert_food(int count); 
+int get_lenght(){ return lenght;}
+int get_width(){ return width;}
+
+private:
+	snake *s = nullptr;
+	food *f = nullptr;
+	int lenght = 30;
+	int width = 20;
+	char margins_shape = '#';
+	char empty_shape = '.';
+};
+
+page::page(snake *Snake, food *Food)
+:s(Snake),f(Food)
+{
+}	 
+
+void page::print()
 {
 	system("clear");
 	cout << "player 1" << endl;
-	cout << "score: "<< s->get_score() << endl;
+	cout << "score: "<< s->return_score() << endl;
 
 	for(int y = 0; y < width; y++)
 	{
@@ -228,18 +247,25 @@ void print(snake *s, food *f)
 	}
 }
 
-int get_lenght(){ return lenght;}
-int get_width(){ return width;}
+void page::insert_food(int count) 
+{
+	for(int i = 0; i < count; i++)
+	{
+        while(true)
+        {
+			int x_food = rand() % (lenght - 3) + 2;
+            int y_food = rand() % (width - 3) + 2;
+							
+			if(check_corruct_food_coordinates(x_food, y_food))
+	        {	
+				f->coordinates.push_back(pair<int, int>(x_food, y_food));
+				break;
+			}
+        }			
+	}
+}
 
-private:
-	int lenght = 30;
-	int width = 20;
-	char margins_shape = '#';
-	char empty_shape = '.';
-};
-
-
-bool check_corruct_coordinates(int x_food, int y_food, snake *s)
+bool page::check_corruct_food_coordinates(int x_food, int y_food)
 {
 	for(int i = 0; i < s->coordinates.size(); i++)
 	{
@@ -249,23 +275,40 @@ bool check_corruct_coordinates(int x_food, int y_food, snake *s)
 	return true;
 }
 
-void insert_food(snake *s, food *f, int lenght, int width, int count) 
+void page::message_game_over(string player)
 {
-	for(int i = 0; i < count; i++)
-	{
-        while(true)
-        {
-			int x_food = rand() % (lenght - 3) + 2;
-            int y_food = rand() % (width - 3) + 2;
-							
-			if(check_corruct_coordinates(x_food, y_food, s))
-	        {	
-				f->coordinates.push_back(pair<int, int>(x_food, y_food));
-				break;
-			}
-        }			
-	}
+    cout << endl;
+    if(player == "EQUAL")
+        cout << "\t\t\tEQUAL GAME\t\t\t" << endl;
+    else     
+        cout << "\t\t\t" << player << " GAME OVER\t\t\t" << endl;
 }
+
+void page::GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input)
+{
+    message_game_over(player);
+    end_game = true;
+    thread_for_read_input.join();
+}
+
+bool page::check_eat_food()
+{
+    int x_head_snake = s->coordinates[0].first;
+    int y_head_snake = s->coordinates[0].second;
+
+    for(size_t i = 0; i < s->coordinates.size(); i++)
+    {
+        if(f->coordinates[i].first ==  x_head_snake and f->coordinates[i].second ==  y_head_snake)
+        {
+            // Delete food from coordinates
+            f->coordinates.erase(f->coordinates.begin() + i);
+            return true;
+        }
+    }
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////
 
 void change_move_type_player1(string& move_type, char input_move_type)
 {
@@ -280,22 +323,6 @@ void change_move_type_player1(string& move_type, char input_move_type)
 
     if(input_move_type == KEY_RIGHT)
         move_type = "right";
-}
-
-void message_game_over(string player)
-{
-    cout << endl;
-    if(player == "EQUAL")
-        cout << "\t\t\tEQUAL GAME\t\t\t" << endl;
-    else     
-        cout << "\t\t\t" << player << " GAME OVER\t\t\t" << endl;
-}
-
-void GAME_OVER(string player, atomic<bool>& end_game, thread& thread_for_read_input)
-{
-    message_game_over(player);
-    end_game = true;
-    thread_for_read_input.join();
 }
 
 void read_input(string& move_type1, atomic<bool>& END_GAME)
@@ -327,14 +354,16 @@ int main()
 {
 	srand(time(0));	
 
+    // Setting
 	atomic<bool> END_GAME {false};
 	string move_type_player1 = "left";
 	int LEVEL = EASY;
 	snake s(5, 5);
 	food f;
-	page p;
+	page p(&s, &f);
 
-	insert_food(&s, &f, p.get_lenght(), p.get_width(), f.get_count());
+
+	p.insert_food(f.get_count());
 
 	thread thread_for_read_input(read_input, ref(move_type_player1), ref(END_GAME));
 
@@ -349,18 +378,18 @@ int main()
 
 	    if(s.check_crash_to_self_body())
         {
-            GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);
+            p.GAME_OVER("PLAYER 1", END_GAME, thread_for_read_input);
             return 0;
         }
 
-        if(s.check_get_score(&f))
+        if(p.check_eat_food())
         {   
 			s.GET_SCORE();
-			insert_food(&s, &f, p.get_lenght(), p.get_width(), 1); 					
+			p.insert_food(1); 					
 		}
         else
             s.GET_NOT_SCORE();
 
-		p.print(&s, &f);
+		p.print();
 	}
 }
