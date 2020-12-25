@@ -284,29 +284,35 @@ public:
 	void insert_new_food(Food *food); 
 	int get_lenght(){ return lenght;}
 	int get_width(){ return width;}
-	bool move_once(string& move_type);
+	void move_once(string& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input);
 	void check_crash_wall();	
 
 private:
-	Snake *snake = nullptr;
+	Snake *snake;
 	vector<Food*> foods;
-	int lenght = 30;
-	int width = 20;
-	char margins_shape = '#';
-	char empty_shape = '.';
+	int lenght;
+	int width;
+	char margins_shape;
+	char empty_shape;
 };
 
 Page::Page(Snake *snake, vector<Food*>& foods)
-:snake(snake),foods(foods)
+:snake(snake)
+,foods(foods)
+,lenght(30)
+,width(20)
+,margins_shape('#')
+,empty_shape('.')
 {
 }	 
 
-bool Page::move_once(string& move_type)
+void Page::move_once(string& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input)
 {
 	snake->move(move_type);	
 	check_crash_wall();
 	check_eat_food();
-	return snake->check_crash_to_self_body();
+	if(snake->check_crash_to_self_body())
+		game_over(snake->get_name(), END_GAME, thread_for_read_input);
 }
 
 void Page::check_eat_food()
@@ -316,7 +322,7 @@ void Page::check_eat_food()
 		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())
 		{	
 			snake->increase_size(foods[i]->get_val());
-			insert_new_food(foods[i]);///////////////////////////////////////
+			insert_new_food(foods[i]);
 		}
 	}
 }
@@ -475,8 +481,8 @@ int main()
 
 	vector<Food*> foods;
 	Food f1(15, 10);
-	Food f2(15, 15, 3, '3', BOLDWHITE);
-	Food f3(15, 3, 5, '5', BOLDMAGENTA);
+	Food f2(15, 15, 3, '*', BOLDWHITE);
+	Food f3(15, 3, 5, '*', BOLDMAGENTA);
 
 	foods.push_back(&f1);
 	foods.push_back(&f2);
@@ -486,14 +492,10 @@ int main()
 	
 	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
 
-	while(true)
+	while(!END_GAME)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
-		if(page.move_once(move_type))
-		{
-	       	page.game_over(snake.get_name(), END_GAME, thread_for_read_input);
-            return 0;
-		}
+		page.move_once(move_type, END_GAME, thread_for_read_input);
 		page.print();	
 	}
 }
