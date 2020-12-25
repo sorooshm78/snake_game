@@ -49,7 +49,8 @@ class Snake;
 class Food
 {
 public:
-	Food(int x, int y, int val);
+	Food(int x, int y);
+	Food(int x, int y, int val, char shape, string color);
 	bool is_existe(int x, int y);
 	void change_coordinates(int x, int y);
 	int get_x(){ return x;}
@@ -62,14 +63,25 @@ private:
 	int x;
 	int y;
 	int value;
-	char shape = '*';
-	string color = BOLDYELLOW; 
+	char shape;
+	string color;
 };
 
-Food::Food(int x, int y, int val)
+Food::Food(int x, int y)
+:x(x)
+,y(y)
+,value(1)
+,shape('*')
+,color(BOLDYELLOW)
+{
+}
+
+Food::Food(int x, int y, int val, char shape, string color)
 :x(x)
 ,y(y)
 ,value(val)
+,shape(shape)
+,color(color)
 {
 }
 
@@ -91,12 +103,10 @@ void Food::change_coordinates(int x, int y)
 class Snake
 {
 public:
-	Snake(int x, int y, string name, string color);
+	Snake(int x, int y);
+	Snake(int x, int y, int size, string name, char shape, string color);
 	bool check_crash_to_self_body();
 	void move(string& move_type);
-	void to_corruct_move_type(string& move_type);
-	void add_new_head(string& move_type);
-	void cut_tail();
 	bool is_existe(int x, int y);
 	void change_x_head(int x);
 	void change_y_head(int y);
@@ -110,20 +120,43 @@ public:
 	string get_name() {return name;}
 		
 private:
+	void to_corruct_move_type(string& move_type);
+	void add_new_head(string& move_type);
+	void cut_tail();
+
 	vector<pair<int, int>> coordinates;
-	char shape = '+';
-	int score = 0;
-	int primitive_size = 5;
+	char shape;
+	int score;
+	int primitive_size;
 	int increase_lenght;
-	string last_move = "left";
+	string last_move;
 	string name;
-	string color = BOLDBLUE;
+	string color;
 };
 
-Snake::Snake(int x, int y, string name, string color)
+Snake::Snake(int x, int y, int size, string name, char shape, string color)
 :color(color)
 ,name(name)
 ,increase_lenght(0)
+,primitive_size(size)
+,shape(shape)
+,score(0)
+,last_move("left")
+{
+	for(int i = 0; i < primitive_size; i++)
+	{
+		coordinates.push_back(pair<int, int>(x + i, y));
+	}
+}
+
+Snake::Snake(int x, int y)
+:color(BOLDRED)
+,name("PLAYER")
+,increase_lenght(0)
+,primitive_size(5)
+,shape('+')
+,score(0)
+,last_move("left")
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -243,12 +276,12 @@ void Snake::to_corruct_move_type(string& move_type)
 class Page
 {
 public:
-	Page(Snake *snake, Food *food);
+	Page(Snake *snake, vector<Food*> &foods);
 	void print();
 	void check_eat_food();
 	void message_game_over(string player);
 	void game_over(string player, atomic<bool>& end_game, thread& thread_for_read_input);
-	void insert_food(); 
+	void insert_new_food(Food *food); 
 	int get_lenght(){ return lenght;}
 	int get_width(){ return width;}
 	bool move_once(string& move_type);
@@ -256,15 +289,15 @@ public:
 
 private:
 	Snake *snake = nullptr;
-	Food *food = nullptr;
+	vector<Food*> foods;
 	int lenght = 30;
 	int width = 20;
 	char margins_shape = '#';
 	char empty_shape = '.';
 };
 
-Page::Page(Snake *snake, Food *food)
-:snake(snake),food(food)
+Page::Page(Snake *snake, vector<Food*>& foods)
+:snake(snake),foods(foods)
 {
 }	 
 
@@ -278,10 +311,13 @@ bool Page::move_once(string& move_type)
 
 void Page::check_eat_food()
 {
-	if(snake->get_x_head() == food->get_x() and snake->get_y_head() == food->get_y())
-	{	
-		snake->increase_size(food->get_val());
-		insert_food();
+	for(int i = 0; i < foods.size(); i++)
+	{
+		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())
+		{	
+			snake->increase_size(foods[i]->get_val());
+			insert_new_food(foods[i]);///////////////////////////////////////
+		}
 	}
 }
 
@@ -320,6 +356,7 @@ void Page::print()
 		for(int x = 0; x < lenght; x++)
 		{
 			bool print_empty = true;
+
 			// Margins
 			if(x == 0 or y == 0 or x == lenght - 1 or y == width - 1)
 			{
@@ -335,19 +372,24 @@ void Page::print()
 			}
 
 			// Food
-			if(food->is_existe(x, y))
-			{	
-				cout << food->get_color() << food->get_shape() << RESET << " ";			
-				continue;
+			for(int i = 0; i < foods.size(); i++)
+			{
+				if(foods[i]->is_existe(x, y))
+				{	
+					cout << foods[i]->get_color() << foods[i]->get_shape() << RESET << " ";			
+					print_empty = false;
+					break;
+				}
 			}
-
-			cout << empty_shape << " ";
+	
+			if(print_empty)
+				cout << empty_shape << " ";
 		}
 		cout << endl;
 	}
 }
 
-void Page::insert_food() 
+void Page::insert_new_food(Food *food) 
 {
 	while(true)
 	{
@@ -380,7 +422,7 @@ void Page::game_over(string player, atomic<bool>& end_game, thread& thread_for_r
 
 //////////////////////////////////////////////////////////////////
 
-void change_move_type_player1(string& move_type, char input_move_type)
+void change_move_type(string& move_type, char input_move_type)
 {
     if(input_move_type == KEY_UP)
         move_type = "up";
@@ -395,7 +437,7 @@ void change_move_type_player1(string& move_type, char input_move_type)
         move_type = "right";
 }
 
-void read_input(string& move_type1, atomic<bool>& END_GAME)
+void read_input(string& move_type, atomic<bool>& END_GAME)
 {
     while(!END_GAME)
     {
@@ -414,7 +456,7 @@ void read_input(string& move_type1, atomic<bool>& END_GAME)
             cin >> input_char2;
             cin >> input_char3;
             if (input_char2 == 91) 
-                change_move_type_player1(move_type1, input_char3);
+                change_move_type(move_type, input_char3);
         }
     }
 }
@@ -425,26 +467,33 @@ int main()
 
     // Setting
 	atomic<bool> END_GAME {false};
-	string move_type_player1 = "left";
+	string move_type = "left";
 	int LEVEL = EASY;
 
 
-	Snake snake(15, 5, "SOROOSH", BOLDBLUE);
-	Food food(15, 10, 1);
-	Page page(&snake, &food);
-	
-	page.print();
+	Snake snake(15, 5);
 
-	thread thread_for_read_input(read_input, ref(move_type_player1), ref(END_GAME));
+	vector<Food*> foods;
+	Food f1(15, 10);
+	Food f2(15, 15, 3, '3', BOLDWHITE);
+	Food f3(15, 3, 5, '5', BOLDMAGENTA);
+
+	foods.push_back(&f1);
+	foods.push_back(&f2);
+	foods.push_back(&f3);
+	
+	Page page(&snake, foods);
+	
+	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
 
 	while(true)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
-		if(page.move_once(move_type_player1))
+		if(page.move_once(move_type))
 		{
 	       	page.game_over(snake.get_name(), END_GAME, thread_for_read_input);
             return 0;
 		}
 		page.print();	
-	}	
+	}
 }
