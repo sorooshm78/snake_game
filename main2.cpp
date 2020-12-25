@@ -492,10 +492,13 @@ int main()
 	
 	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
 
-	while(!END_GAME)
+	while(true)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
 		page.move_once(move_type, END_GAME, thread_for_read_input);
-		page.print();	
+		if(!END_GAME)
+			page.print();	
+		else
+			return 0;
 	}
 }
