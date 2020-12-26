@@ -152,7 +152,7 @@ Snake::Snake(int x, int y, int size, string name, char shape, string color)
 }
 
 Snake::Snake(int x, int y)
-:color(BOLDRED)
+:color(BOLDBLUE)
 ,name("PLAYER")
 ,increase_lenght(0)
 ,primitive_size(5)
@@ -480,8 +480,8 @@ int main()
 
 	vector<Food*> foods;
 	Food f1(15, 10);
-	Food f2(15, 15, 3, '*', BOLDWHITE);
-	Food f3(15, 3, 5, '*', BOLDMAGENTA);
+	Food f2(10, 10, 3, '*', BOLDWHITE);
+	Food f3(20, 10, 5, '*', BOLDMAGENTA);
 
 	foods.push_back(&f1);
 	foods.push_back(&f2);
