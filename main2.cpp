@@ -38,6 +38,8 @@
 #define MEDIUM 200
 #define HARD 100
 
+enum Move{LEFT, RIGHT, UP, DOWN};
+
 using namespace std;
 
 class Page;
@@ -106,7 +108,7 @@ public:
 	Snake(int x, int y);
 	Snake(int x, int y, int size, string name, char shape, string color);
 	bool check_crash_to_self_body();
-	void move(string& move_type);
+	void move(Move& move_type);
 	bool is_existe(int x, int y);
 	void change_x_head(int x);
 	void change_y_head(int y);
@@ -120,8 +122,8 @@ public:
 	string get_name() {return name;}
 		
 private:
-	void to_corruct_move_type(string& move_type);
-	void add_new_head(string& move_type);
+	void to_corruct_move_type(Move& move_type);
+	void add_new_head(Move& move_type);
 	void cut_tail();
 
 	vector<pair<int, int>> coordinates;
@@ -129,7 +131,7 @@ private:
 	int score;
 	int primitive_size;
 	int increase_lenght;
-	string last_move;
+	Move last_move;
 	string name;
 	string color;
 };
@@ -141,7 +143,7 @@ Snake::Snake(int x, int y, int size, string name, char shape, string color)
 ,primitive_size(size)
 ,shape(shape)
 ,score(0)
-,last_move("left")
+,last_move(LEFT)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -156,7 +158,7 @@ Snake::Snake(int x, int y)
 ,primitive_size(5)
 ,shape('+')
 ,score(0)
-,last_move("left")
+,last_move(LEFT)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -203,21 +205,21 @@ bool Snake::check_crash_to_self_body()
     return false;
 }
 
-void Snake::add_new_head(string& move_type)
+void Snake::add_new_head(Move& move_type)
 {
 	int x_head_snake = get_x_head();
     int y_head_snake = get_y_head();
 
-    if(move_type == "left")
+    if(move_type == LEFT)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake - 1, y_head_snake));
 
-    if(move_type == "right")
+    if(move_type == RIGHT)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake + 1, y_head_snake));
 
-    if(move_type == "up")
+    if(move_type == UP)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake - 1));
 
-    if(move_type == "down")
+    if(move_type == DOWN)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake + 1));
 }
 
@@ -225,47 +227,44 @@ void Snake::cut_tail()
 {
 	if(increase_lenght == 0)
 		coordinates.pop_back();
-	else
-	{	
-		if(increase_lenght != 0)
-			increase_lenght --;
-	}
+	else if(increase_lenght != 0)
+		increase_lenght --;
 }
 
-void Snake::move(string& move_type)
+void Snake::move(Move& move_type)
 {
 	to_corruct_move_type(move_type);
 	add_new_head(move_type);
 	cut_tail();
 }
 
-void Snake::to_corruct_move_type(string& move_type)
+void Snake::to_corruct_move_type(Move& move_type)
 {
     // RIGHT
-    if(move_type == "left" and last_move == "right")
+    if(move_type == LEFT and last_move == RIGHT)
     {
-        move_type = "right";
+        move_type = RIGHT;
         return;
     }
 
     // LEFT
-    if(move_type == "right" and last_move == "left")
+    if(move_type == RIGHT and last_move == LEFT)
     {
-        move_type = "left";
+        move_type = LEFT;
         return;
     }
 
     // DOWN
-    if(move_type == "up" and last_move == "down")
+    if(move_type == UP and last_move == DOWN)
     {
-        move_type = "down";
+        move_type = DOWN;
         return;
     }
 
     // UP
-    if(move_type == "down" and last_move == "up")
+    if(move_type == DOWN and last_move == UP)
     {
-        move_type = "up";
+        move_type = UP;
         return;
     }
     last_move = move_type;
@@ -284,7 +283,7 @@ public:
 	void insert_new_food(Food *food); 
 	int get_lenght(){ return lenght;}
 	int get_width(){ return width;}
-	void move_once(string& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input);
+	void move_once(Move& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input);
 	void check_crash_wall();	
 
 private:
@@ -306,7 +305,7 @@ Page::Page(Snake *snake, vector<Food*>& foods)
 {
 }	 
 
-void Page::move_once(string& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input)
+void Page::move_once(Move& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input)
 {
 	snake->move(move_type);	
 	check_crash_wall();
@@ -428,22 +427,22 @@ void Page::game_over(string player, atomic<bool>& end_game, thread& thread_for_r
 
 //////////////////////////////////////////////////////////////////
 
-void change_move_type(string& move_type, char input_move_type)
+void change_move_type(Move& move_type, char input_move_type)
 {
     if(input_move_type == KEY_UP)
-        move_type = "up";
+        move_type = UP;
 
     if(input_move_type == KEY_DOWN)
-        move_type = "down";
+        move_type = DOWN;
 
     if(input_move_type == KEY_LEFT)
-        move_type = "left";
+        move_type = LEFT;
 
     if(input_move_type == KEY_RIGHT)
-        move_type = "right";
+        move_type = RIGHT;
 }
 
-void read_input(string& move_type, atomic<bool>& END_GAME)
+void read_input(Move& move_type, atomic<bool>& END_GAME)
 {
     while(!END_GAME)
     {
@@ -473,7 +472,7 @@ int main()
 
     // Setting
 	atomic<bool> END_GAME {false};
-	string move_type = "left";
+	Move move_type = LEFT;
 	int LEVEL = EASY;
 
 
@@ -492,13 +491,11 @@ int main()
 	
 	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
 
-	while(true)
+	while(!END_GAME)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
 		page.move_once(move_type, END_GAME, thread_for_read_input);
 		if(!END_GAME)
 			page.print();	
-		else
-			return 0;
 	}
 }
