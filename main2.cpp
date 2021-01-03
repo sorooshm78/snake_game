@@ -2,7 +2,6 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include <atomic>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -53,7 +52,7 @@ class Food
 public:
 	Food(int x, int y);
 	Food(int x, int y, int val, char shape, string color);
-	bool is_existe(int x, int y) const;
+	bool is_coordinates(int x, int y) const;
 	void change_coordinates(int x, int y);
 	int get_x() const { return x;}
 	int get_y() const { return y;}
@@ -87,7 +86,7 @@ Food::Food(int x, int y, int val, char shape, string color)
 {
 }
 
-bool Food::is_existe(int x, int y) const
+bool Food::is_coordinates(int x, int y) const
 {
 	if(this->x == x and this->y == y)
 		return true;
@@ -109,7 +108,7 @@ public:
 	Snake(int x, int y, int size, string name, char shape, string color);
 	bool check_crash_to_self_body() const;
 	void move(Move& move_type);
-	bool is_existe(int x, int y) const;
+	bool is_coordinates(int x, int y) const;
 	void change_x_head(int x);
 	void change_y_head(int y);
 	void increase_size(int val);
@@ -182,7 +181,7 @@ void Snake::change_y_head(int y)
 	coordinates[0].second = y;
 }
 
-bool Snake::is_existe(int x, int y) const
+bool Snake::is_coordinates(int x, int y) const
 {
 	for(int i = 0; i < coordinates.size(); i++)
 	{
@@ -275,19 +274,20 @@ void Snake::to_corruct_move_type(Move& move_type)
 class Page
 {
 public:
-	Page(Snake *snake, vector<Food*> &foods);
+	Page(vector<Snake*> &snakes, vector<Food*> &foods);
 	void print() const;
-	void handle_eat_food();
+	void handle_eat_food(Snake *snake);
 	void message_game_over(string player) const;
-	void game_over(string player, atomic<bool>& end_game, thread& thread_for_read_input);
+	void game_over(string player, bool& end_game, thread& thread_for_read_input);
 	void insert_new_food(Food *food); 
 	int get_lenght() const { return lenght;}
 	int get_width() const { return width;}
-	void move_once(Move& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input);
-	void handle_crash_wall();	
+	void move_once(Move& move_type, bool& END_GAME, thread& thread_for_read_input);
+	void handle_crash_wall(Snake *snake);	
+	bool is_inside_snakes(int x_food, int y_food);
 
 private:
-	Snake *snake;
+	vector<Snake*> snakes;
 	vector<Food*> foods;
 	const int lenght;
 	const int width;
@@ -295,8 +295,8 @@ private:
 	const char empty_shape;
 };
 
-Page::Page(Snake *snake, vector<Food*>& foods)
-:snake(snake)
+Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
+:snakes(snakes)
 ,foods(foods)
 ,lenght(30)
 ,width(20)
@@ -305,16 +305,19 @@ Page::Page(Snake *snake, vector<Food*>& foods)
 {
 }	 
 
-void Page::move_once(Move& move_type, atomic<bool>& END_GAME, thread& thread_for_read_input)
+void Page::move_once(Move& move_type, bool& END_GAME, thread& thread_for_read_input)
 {
-	snake->move(move_type);	
-	handle_crash_wall();
-	handle_eat_food();
-	if(snake->check_crash_to_self_body())
-		game_over(snake->get_name(), END_GAME, thread_for_read_input);
+	for(int i = 0; i < snakes.size(); i++)
+	{
+		snakes[i]->move(move_type);	
+		handle_crash_wall(snakes[i]);
+		handle_eat_food(snakes[i]);
+		if(snakes[i]->check_crash_to_self_body())
+			game_over(snakes[i]->get_name(), END_GAME, thread_for_read_input);
+	}
 }
 
-void Page::handle_eat_food() 
+void Page::handle_eat_food(Snake *snake) 
 {
 	for(int i = 0; i < foods.size(); i++)
 	{
@@ -326,7 +329,7 @@ void Page::handle_eat_food()
 	}
 }
 
-void Page::handle_crash_wall()
+void Page::handle_crash_wall(Snake *snake)
 {
     int margins_up = 0;
     int margins_down = width - 1;
@@ -353,8 +356,8 @@ void Page::handle_crash_wall()
 void Page::print() const
 {
 	system("clear");
-	cout << snake->get_color() << snake->get_name() << RESET << endl;
-	cout << snake->get_color() << "score: " << snake->get_score() << RESET << endl;
+	cout << snakes[0]->get_color() << snakes[0]->get_name() << RESET << endl;
+	cout << snakes[0]->get_color() << "score: " << snakes[0]->get_score() << RESET << endl;
 
 	for(int y = 0; y < width; y++)
 	{
@@ -369,17 +372,21 @@ void Page::print() const
 				continue;
 			}
 
-			// Snake	
-			if(snake->is_existe(x, y))
-			{	
-				cout << snake->get_color() << snake->get_shape() << RESET << " ";			
-				continue;
+			// Snakes
+			for(int i = 0; i < snakes.size(); i++)
+			{
+				if(snakes[i]->is_coordinates(x, y))
+				{	
+					cout << snakes[i]->get_color() << snakes[i]->get_shape() << RESET << " ";			
+					print_empty = false;
+					break;
+				}
 			}
-
-			// Food
+	
+			// Foods
 			for(int i = 0; i < foods.size(); i++)
 			{
-				if(foods[i]->is_existe(x, y))
+				if(foods[i]->is_coordinates(x, y))
 				{	
 					cout << foods[i]->get_color() << foods[i]->get_shape() << RESET << " ";			
 					print_empty = false;
@@ -394,16 +401,26 @@ void Page::print() const
 	}
 }
 
+bool Page::is_inside_snakes(int x_food, int y_food)
+{
+	for(int i = 0; i < snakes.size(); i++)
+	{				
+		if(snakes[i]->is_coordinates(x_food, y_food))
+			return false;	
+	}
+	return true;
+}
+
 void Page::insert_new_food(Food *food) 
 {
 	while(true)
 	{
 		int x_food = rand() % (lenght - 3) + 2;
 		int y_food = rand() % (width - 3) + 2;
-						
-		if(!snake->is_existe(x_food, y_food))
-		{	
-			food->change_coordinates(x_food, y_food);
+		
+		if(is_inside_snakes(x_food, y_food))
+		{
+			food->change_coordinates(x_food, y_food);		
 			break;
 		}
 	}				
@@ -418,7 +435,7 @@ void Page::message_game_over(string player) const
         cout << "\t\t\t" << player << " GAME OVER\t\t\t" << endl;
 }
 
-void Page::game_over(string player, atomic<bool>& end_game, thread& thread_for_read_input)
+void Page::game_over(string player, bool& end_game, thread& thread_for_read_input)
 {
     message_game_over(player);
     end_game = true;
@@ -442,7 +459,7 @@ void change_move_type(Move& move_type, char input_move_type)
         move_type = RIGHT;
 }
 
-void read_input(Move& move_type, atomic<bool>& END_GAME)
+void read_input(Move& move_type, bool& END_GAME)
 {
     while(!END_GAME)
     {
@@ -451,7 +468,6 @@ void read_input(Move& move_type, atomic<bool>& END_GAME)
         tcgetattr(STDIN_FILENO, &t);
         t.c_lflag &= ~ICANON;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
-
 
         char input_char1, input_char2, input_char3;
         cin >> input_char1;
@@ -471,25 +487,30 @@ int main()
 	srand(time(0));	
 
     // Setting
-	atomic<bool> END_GAME {false};
+	bool END_GAME {false};
 	Move move_type = LEFT;
 	int LEVEL = EASY;
 
-	// Object game
+	// Object food game
+	vector<Snake*> snakes;
+	
 	Snake snake(15, 5);
+
+	snakes.push_back(&snake);
+
+	// Object food game
 	vector<Food*> foods;
 
-	// Food setting
 	Food f1(15, 10);
-	Food f2(10, 10, 3, '*', BOLDWHITE);
-	Food f3(20, 10, 5, '*', BOLDMAGENTA);
+	Food f2(10, 10, 3, '3', BOLDWHITE);
+	Food f3(20, 10, 5, '5', BOLDMAGENTA);
 
 	foods.push_back(&f1);
 	foods.push_back(&f2);
 	foods.push_back(&f3);
 	
 	// Page setting
-	Page page(&snake, foods);
+	Page page(snakes, foods);
 	
 	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
 
