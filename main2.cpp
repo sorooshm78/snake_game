@@ -325,15 +325,6 @@ Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
 {
 }	 
 
-/*bool Page::is_get_score_next_move(Snake *snake, Move direction)
-{
-	for(int i = 0; i < foods.szie(); i++)
-	{
-		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())
-
-	}
-}*/
-
 Move Page::define_direction_move(Snake *snake)
 {
 	vector<Move> candidate;
@@ -344,13 +335,10 @@ Move Page::define_direction_move(Snake *snake)
 		if(snake->is_coordinates(next.first, next.second))
 			continue;
 		
-/*		for(int i = 0; i < foods.size(); i++)
-		{
-			if(directoin 		
+		for(int i = 0; i < foods.size(); i++)
+			if(next.first == foods[i]->get_x() and next.second == foods[i]->get_y())
+				return Move(direction);
 
-
-		}
-*/
 		candidate.push_back(Move(direction));
 	}
 	return candidate[rand()%candidate.size()];
@@ -360,8 +348,6 @@ void Page::move_once(Move& move_type, bool& END_GAME, thread& thread_for_read_in
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
-//		snakes[i]->move(move_type);	
-
 		snakes[i]->move(define_direction_move(snakes[i]));	
 		handle_crash_wall(snakes[i]);
 		handle_eat_food(snakes[i]);
