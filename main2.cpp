@@ -119,7 +119,7 @@ public:
 	int get_y_head() const {return coordinates[0].second;}
 	string get_color() const {return color;}
 	string get_name() const {return name;}
-	bool is_crash_to_self(Move move);
+	pair<int, int> next_move_coordinates(Move move);
 	
 private:
 	void to_corruct_move_type(Move& move_type);
@@ -166,22 +166,22 @@ Snake::Snake(int x, int y)
 	}
 }
 
-bool Snake::is_crash_to_self(Move direction)
+pair<int, int> Snake::next_move_coordinates(Move direction)
 {
 	int x_head_snake = get_x_head();
     int y_head_snake = get_y_head();
 
     if(direction == LEFT)
-	 	return is_coordinates(x_head_snake - 1, y_head_snake);
+	 	return pair<int, int>(x_head_snake - 1, y_head_snake);
 
     if(direction == RIGHT)
-        return is_coordinates(x_head_snake + 1, y_head_snake);
+        return pair<int, int>(x_head_snake + 1, y_head_snake);
 
     if(direction == UP)
-        return is_coordinates(x_head_snake, y_head_snake - 1);
+        return pair<int, int>(x_head_snake, y_head_snake - 1);
 
     if(direction == DOWN)
-        return is_coordinates(x_head_snake, y_head_snake + 1);
+        return pair<int, int>(x_head_snake, y_head_snake + 1);
 }
 
 void Snake::increase_size(int val)
@@ -325,14 +325,32 @@ Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
 {
 }	 
 
+/*bool Page::is_get_score_next_move(Snake *snake, Move direction)
+{
+	for(int i = 0; i < foods.szie(); i++)
+	{
+		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())
+
+	}
+}*/
+
 Move Page::define_direction_move(Snake *snake)
 {
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
-		if(snake->is_crash_to_self(Move(direction)))
-			continue;
+		pair<int, int> next = snake->next_move_coordinates(Move(direction));
 
+		if(snake->is_coordinates(next.first, next.second))
+			continue;
+		
+/*		for(int i = 0; i < foods.size(); i++)
+		{
+			if(directoin 		
+
+
+		}
+*/
 		candidate.push_back(Move(direction));
 	}
 	return candidate[rand()%candidate.size()];
