@@ -534,10 +534,10 @@ int main()
 	vector<Snake*> snakes;
 	
 	Snake s1(15, 5);
-//	Snake s2(15, 15, 5, "sm", 'o', YELLOW);
+	Snake s2(15, 15, 5, "sm", 'o', YELLOW);
 
 	snakes.push_back(&s1);
-//	snakes.push_back(&s2);
+	snakes.push_back(&s2);
 
 
 	// Object food game
