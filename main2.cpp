@@ -359,8 +359,6 @@ void Page::check_and_handle_crash_to_another_snakes_head(Snake *snake)
 
 		if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
 		{
-	        this_thread::sleep_for(chrono::milliseconds(20000));
-
 			if(snakes[i]->get_score() == snake->get_score())
 			{
 				snakes.erase(snakes.begin() + i);
@@ -392,7 +390,7 @@ Move Page::determine_direction_move_bot(Snake *snake)
 
 		handle_crash_wall(virtual_snake);
 
-		if(snake->is_coordinates(next.first, next.second))
+		if(snake->is_coordinates(virtual_snake->get_x_head(), virtual_snake->get_y_head()))
 			continue;
 
 		if(check_crash_to_another_snakes_body(virtual_snake))
@@ -428,14 +426,11 @@ bool Page::check_crash_to_another_snakes_body(Snake *snake)
 
 void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 {
-	Move t;
 	for(int i = 0; i < snakes.size(); i++)
 	{
 		if(snakes[i]->is_bot())
 		{
-			t = determine_direction_move_bot(snakes[i]);
-			snakes[i]->move(t);
-			//snakes[i]->move(determine_direction_move_bot(snakes[i]));
+			snakes[i]->move(determine_direction_move_bot(snakes[i]));
 		}
 		else
 		{
@@ -451,18 +446,12 @@ void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 
 		if(snakes[i]->check_crash_to_self_body())
 		{
-			cout << snakes[i]->get_name() << " self " << " type " <<  t << endl;
-	        this_thread::sleep_for(chrono::milliseconds(30000));
-
 			snakes.erase(snakes.begin() + i);
 			continue;
 		}
 				
-		if(check_crash_to_another_snakes_head(snakes[i]))
+		if(check_crash_to_another_snakes_body(snakes[i]))
 		{
-			cout << snakes[i]->get_name() << " another " << " type " <<  t << endl;
-	        this_thread::sleep_for(chrono::milliseconds(30000));
-
 			snakes.erase(snakes.begin() + i);
 			continue;
 		}
