@@ -37,6 +37,9 @@
 #define MEDIUM 200
 #define HARD 100
 
+#define BOT true
+#define NOT_BOT false
+
 enum Move{LEFT, RIGHT, UP, DOWN};
 
 using namespace std;
@@ -50,7 +53,6 @@ class Snake;
 class Food
 {
 public:
-	Food(int x, int y);
 	Food(int x, int y, int val, char shape, string color);
 	bool is_coordinates(int x, int y) const;
 	void change_coordinates(int x, int y);
@@ -67,15 +69,6 @@ private:
 	const char shape;
 	const string color;
 };
-
-Food::Food(int x, int y)
-:x(x)
-,y(y)
-,value(1)
-,shape('*')
-,color(BOLDYELLOW)
-{
-}
 
 Food::Food(int x, int y, int val, char shape, string color)
 :x(x)
@@ -104,10 +97,9 @@ void Food::change_coordinates(int x, int y)
 class Snake
 {
 public:
-	Snake(int x, int y);
 	Snake(int x, int y, int size, string name, char shape, string color, bool bot);
 	bool check_crash_to_self_body() const;
-	void move(Move move_type);
+	void move(Move direction);
 	bool is_coordinates(int x, int y) const;
 	void change_x_head(int x);
 	void change_y_head(int y);
@@ -121,12 +113,11 @@ public:
 	string get_name() const {return name;}
 	pair<int, int> next_move_coordinates(Move move);
 	bool is_body(int x, int y);
-	bool is_all_coordinates(int x, int y);
 	bool is_bot(){ return bot; }	
 	
 private:
-	void to_corruct_move_type(Move& move_type);
-	void add_new_head(Move& move_type);
+	void to_corruct_direction(Move& direction);
+	void add_new_head(Move& direction);
 	void cut_tail();
 
 	vector<pair<int, int>> coordinates;
@@ -137,7 +128,7 @@ private:
 	const int primitive_size;
 	const string name;
 	const string color;
-	bool bot;
+	const bool bot;
 };
 
 Snake::Snake(int x, int y, int size, string name, char shape, string color, bool bot)
@@ -149,22 +140,6 @@ Snake::Snake(int x, int y, int size, string name, char shape, string color, bool
 ,score(0)
 ,last_move(LEFT)
 ,bot(bot)
-{
-	for(int i = 0; i < primitive_size; i++)
-	{
-		coordinates.push_back(pair<int, int>(x + i, y));
-	}
-}
-
-Snake::Snake(int x, int y)
-:color(BOLDBLUE)
-,name("PLAYER")
-,increase_lenght(0)
-,primitive_size(5)
-,shape('+')
-,score(0)
-,last_move(LEFT)
-,bot(true)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -193,14 +168,6 @@ pair<int, int> Snake::next_move_coordinates(Move direction)
 bool Snake::is_body(int x, int y)
 {
 	for(int i = 1; i < coordinates.size(); i++)
-		if(coordinates[i].first == x and coordinates[i].second == y)
-			return true;
-	return false;
-}
-
-bool Snake::is_all_coordinates(int x, int y)
-{
-	for(int i = 0; i < coordinates.size(); i++)
 		if(coordinates[i].first == x and coordinates[i].second == y)
 			return true;
 	return false;
@@ -245,21 +212,21 @@ bool Snake::check_crash_to_self_body() const
     return false;
 }
 
-void Snake::add_new_head(Move& move_type)
+void Snake::add_new_head(Move& direction)
 {
 	int x_head_snake = get_x_head();
     int y_head_snake = get_y_head();
 
-    if(move_type == LEFT)
+    if(direction == LEFT)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake - 1, y_head_snake));
 
-    if(move_type == RIGHT)
+    if(direction == RIGHT)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake + 1, y_head_snake));
 
-    if(move_type == UP)
+    if(direction == UP)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake - 1));
 
-    if(move_type == DOWN)
+    if(direction == DOWN)
         coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake + 1));
 }
 
@@ -271,43 +238,43 @@ void Snake::cut_tail()
 		increase_lenght --;
 }
 
-void Snake::move(Move move_type)
+void Snake::move(Move direction)
 {
-	to_corruct_move_type(move_type);
-	add_new_head(move_type);
+	to_corruct_direction(direction);
+	add_new_head(direction);
 	cut_tail();
 }
 
-void Snake::to_corruct_move_type(Move& move_type)
+void Snake::to_corruct_direction(Move& direction)
 {
     // RIGHT
-    if(move_type == LEFT and last_move == RIGHT)
+    if(direction == LEFT and last_move == RIGHT)
     {
-        move_type = RIGHT;
+        direction = RIGHT;
         return;
     }
 
     // LEFT
-    if(move_type == RIGHT and last_move == LEFT)
+    if(direction == RIGHT and last_move == LEFT)
     {
-        move_type = LEFT;
+        direction = LEFT;
         return;
     }
 
     // DOWN
-    if(move_type == UP and last_move == DOWN)
+    if(direction == UP and last_move == DOWN)
     {
-        move_type = DOWN;
+        direction = DOWN;
         return;
     }
 
     // UP
-    if(move_type == DOWN and last_move == UP)
+    if(direction == DOWN and last_move == UP)
     {
-        move_type = UP;
+        direction = UP;
         return;
     }
-    last_move = move_type;
+    last_move = direction;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -323,7 +290,7 @@ public:
 	void insert_new_food(Food *food); 
 	int get_lenght() const { return lenght;}
 	int get_width() const { return width;}
-	void move_once(Move& move_type_1, Move& move_type_2, bool& END_GAME);
+	void move_once(Move& direction_1, Move& direction_2, bool& END_GAME);
 	void handle_crash_wall(Snake *snake);	
 	bool is_inside_snakes(int x_food, int y_food);
 	Move define_direction_move(Snake *snake);
@@ -370,8 +337,6 @@ void Page::check_crash_to_head_another(Snake *snake)
 
 		else if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
 		{
-//			this_thread::sleep_for(chrono::milliseconds(30000));
-
 			if(snakes[i]->get_score() == snake->get_score())
 			{
 				snakes.erase(snakes.begin() + i);
@@ -426,7 +391,7 @@ bool Page::crash_to_snakes(Snake *snake, int x_head, int y_head)
 		if(snakes[i]->get_name() == snake->get_name())
 			continue;
 
-		else if(snakes[i]->is_all_coordinates(x_head, y_head))
+		else if(snakes[i]->is_coordinates(x_head, y_head))
 			return true;
 	}
 	return false;
@@ -444,43 +409,34 @@ bool Page::crash_to_another_snakes(Snake *snake)
 	return false;
 }
 
-void Page::move_once(Move& move_type_1, Move& move_type_2, bool& END_GAME)
+void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
-//		Move type = define_direction_move(snakes[i]);
-
 		if(snakes[i]->is_bot())
 			snakes[i]->move(define_direction_move(snakes[i]));
 	
 		else
 		{
 			if(snakes[i]->get_name() == "PLAYER 1")
-				snakes[i]->move(move_type_1);
+				snakes[i]->move(direction_1);
 
 			else					
-				snakes[i]->move(move_type_2);
+				snakes[i]->move(direction_2);
 		}
 		
-		//Move type = define_direction_move(snakes[i]);
-		//snakes[i]->move(define_direction_move(snakes[i]));	
-		//snakes[i]->move(type);
 		handle_crash_wall(snakes[i]);
 		handle_eat_food(snakes[i]);
 
 		if(snakes[i]->check_crash_to_self_body())
 		{
-//			cout << snakes[i]->get_name() << " crash self  " << "t : " << type << endl;
 			snakes.erase(snakes.begin() + i);
-//	        this_thread::sleep_for(chrono::milliseconds(30000));	
 			continue;
 		}
 				
 		if(crash_to_another_snakes(snakes[i]))
 		{
-//			cout << snakes[i]->get_name() << " other  " << "t : " << type << endl;
 			snakes.erase(snakes.begin() + i);
-//	        this_thread::sleep_for(chrono::milliseconds(30000));
 			continue;
 		}
 	
@@ -559,6 +515,7 @@ void Page::handle_crash_wall(Snake *snake)
 void Page::print() const
 {
 	system("clear");
+
 	for(int i = 0; i < snakes.size(); i++)
 			cout << snakes[i]->get_color() << snakes[i]->get_name() << " : " << snakes[i]->get_score() << RESET << endl;
 
@@ -651,22 +608,22 @@ void Page::win(string player, bool& end_game)
 
 //////////////////////////////////////////////////////////////////
 
-void change_move_type(Move& move_type, char input_move_type)
+void change_direction_move(Move& direction, char input_direction)
 {
-    if(input_move_type == KEY_UP or input_move_type == 'w')
-        move_type = UP;
+    if(input_direction == KEY_UP or input_direction == 'w')
+        direction = UP;
 
-    if(input_move_type == KEY_DOWN or input_move_type == 's')
-        move_type = DOWN;
+    if(input_direction == KEY_DOWN or input_direction == 's')
+        direction = DOWN;
 
-    if(input_move_type == KEY_LEFT or input_move_type == 'a')
-        move_type = LEFT;
+    if(input_direction == KEY_LEFT or input_direction == 'a')
+        direction = LEFT;
 
-    if(input_move_type == KEY_RIGHT or input_move_type == 'd')
-        move_type = RIGHT;
+    if(input_direction == KEY_RIGHT or input_direction == 'd')
+        direction = RIGHT;
 }
 
-void read_input(Move& move_type_1, Move& move_type_2, bool& END_GAME)
+void read_input(Move& direction_1, Move& direction_2, bool& END_GAME)
 {
     while(!END_GAME)
     {
@@ -681,7 +638,7 @@ void read_input(Move& move_type_1, Move& move_type_2, bool& END_GAME)
 
         // PLAYER 2
         if(input_char1 == 'w' or input_char1 == 's' or input_char1 == 'd' or input_char1 == 'a')
-            change_move_type(move_type_2, input_char1);
+            change_direction_move(direction_2, input_char1);
 
         // PLAYER 1
         if(input_char1 == 27)
@@ -689,34 +646,49 @@ void read_input(Move& move_type_1, Move& move_type_2, bool& END_GAME)
             cin >> input_char2;
             cin >> input_char3;
             if (input_char2 == 91)
-                change_move_type(move_type_1, input_char3);
+                change_direction_move(direction_1, input_char3);
         }
     }
+}
 
+void menu(bool& bots, bool& player1, bool& player2)
+{
+    string num = "0"; 
+    while(num != "1" and num != "2" and num != "3" and num != "4") 
+    { 
+        system("clear"); 
+        cout << "********(" << "MENU" << ")********" << endl; 
+        cout << "1.alone bots" << endl; 
+        cout << "2.one player by bots" << endl; 
+        cout << "3.two player" << endl; 
+        cout << "4.two player by bots" << endl; 
+        cout << "**********************" << endl; 
+        cout << "Select the number you want : "; 
 
+        cin >> num; 
 
+        if(num == "1")
+			bots = true;	
 
-
-/*    while(!END_GAME)
-    {
-        // Black magic to prevent Linux from buffering keystrokes.
-        struct termios t;
-        tcgetattr(STDIN_FILENO, &t);
-        t.c_lflag &= ~ICANON;
-        tcsetattr(STDIN_FILENO, TCSANOW, &t);
-
-        char input_char1, input_char2, input_char3;
-        cin >> input_char1;
-
-        if(input_char1 == 27)
-        {
-            cin >> input_char2;
-            cin >> input_char3;
-            if (input_char2 == 91) 
-                change_move_type(move_type_1, input_char3);
-        }
-    }
-*/
+		if(num == "2")
+		{
+			player1 = true;
+			bots = true;
+    	}
+		
+		if(num == "3")
+		{	
+			player1 = true;	
+			player2 = true;
+		}
+		
+		if(num == "4")
+		{
+			bots = true;
+			player1 = true;	
+			player2 = true;
+		}
+	}
 }
 
 int main()
@@ -725,57 +697,58 @@ int main()
 
     // Setting
 	bool END_GAME {false};
-	Move move_type_1 = LEFT;
-	Move move_type_2 = LEFT;
+	Move direction_1 = LEFT;
+	Move direction_2 = LEFT;
 	int LEVEL = EASY;
+	bool bots = false;
+	bool player1 = false;
+	bool player2 = false;
 
-	// Object food game
 	vector<Snake*> snakes;
-
-	// s1 norm	
-	Snake s1(5, 5, 5, "PLAYER 1", '+', BLUE, false);
-
-	// s2 norm
-	Snake s2(15, 9, 5, "PLAYER 2", 'o', YELLOW, false);
-
-	// s3 bot
-	Snake s3(15, 15, 5, "Q", 'Q', RED, true);
-
-
-
-
-
-//	Snake s4(2, 2, 5, "w", 'w', GREEN);
-//	Snake s5(7, 7, 5, "E", 'E', BLACK);
-
-
-	snakes.push_back(&s1);
-	snakes.push_back(&s2);
-	snakes.push_back(&s3);
-
-//	snakes.push_back(&s4);
-//	snakes.push_back(&s5);
-
-	// Object food game
 	vector<Food*> foods;
 
-	Food f1(15, 10);
-	Food f2(10, 10, 3, '3', BOLDWHITE);
-	Food f3(20, 10, 5, '5', BOLDMAGENTA);
+	Snake B1(22, 3, 5, "BOT 1", 'Q', MAGENTA, BOT);
+	Snake B2(13, 3, 5, "BOT 2", 'W', CYAN, BOT);
+	Snake B3(3, 16, 5, "BOT 3", '0', GREEN, BOT);
+
+	Snake S1(3, 3, 5, "PLAYER 1", '+', BLUE, NOT_BOT);
+	Snake S2(22, 16, 5, "PLAYER 2", '*', RED, NOT_BOT);
+
+	Food f1(15, 10, 1, '1', BOLDYELLOW);
+	Food f2(10, 10, 3, '3', BOLDYELLOW);
+	Food f3(20, 10, 5, '5', BOLDYELLOW);
 
 	foods.push_back(&f1);
 	foods.push_back(&f2);
 	foods.push_back(&f3);
+
+	menu(bots, player1, player2);
+	
+	// BOTS	
+	if(bots)
+	{
+		snakes.push_back(&B1);
+		snakes.push_back(&B2);
+		snakes.push_back(&B3);
+	}
+
+	// PLAYERS
+	if(player1)
+		snakes.push_back(&S1);
+
+	if(player2)	
+		snakes.push_back(&S2);
+
 	
 	// Page setting
 	Page page(snakes, foods);
 		
-	thread thread_for_read_input(read_input, ref(move_type_1), ref(move_type_2), ref(END_GAME));
+	thread thread_for_read_input(read_input, ref(direction_1), ref(direction_2), ref(END_GAME));
 
 	while(!END_GAME)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
-		page.move_once(move_type_1, move_type_2, END_GAME);
+		page.move_once(direction_1, direction_2, END_GAME);
 		page.print();	
 	}
 	thread_for_read_input.join();
