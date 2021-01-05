@@ -371,6 +371,8 @@ Move Page::define_direction_move(Snake *snake)
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
 		pair<int, int> next = snake->next_move_coordinates(Move(direction));
+
+		//FIX make coordinates next move
 		check_crash_wall(next);
 
 		if(snake->is_coordinates(next.first, next.second))
