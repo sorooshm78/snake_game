@@ -105,7 +105,7 @@ class Snake
 {
 public:
 	Snake(int x, int y);
-	Snake(int x, int y, int size, string name, char shape, string color);
+	Snake(int x, int y, int size, string name, char shape, string color, bool bot);
 	bool check_crash_to_self_body() const;
 	void move(Move move_type);
 	bool is_coordinates(int x, int y) const;
@@ -122,6 +122,7 @@ public:
 	pair<int, int> next_move_coordinates(Move move);
 	bool is_body(int x, int y);
 	bool is_all_coordinates(int x, int y);
+	bool is_bot(){ return bot; }	
 	
 private:
 	void to_corruct_move_type(Move& move_type);
@@ -136,9 +137,10 @@ private:
 	const int primitive_size;
 	const string name;
 	const string color;
+	bool bot;
 };
 
-Snake::Snake(int x, int y, int size, string name, char shape, string color)
+Snake::Snake(int x, int y, int size, string name, char shape, string color, bool bot)
 :color(color)
 ,name(name)
 ,increase_lenght(0)
@@ -146,6 +148,7 @@ Snake::Snake(int x, int y, int size, string name, char shape, string color)
 ,shape(shape)
 ,score(0)
 ,last_move(LEFT)
+,bot(bot)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -161,6 +164,7 @@ Snake::Snake(int x, int y)
 ,shape('+')
 ,score(0)
 ,last_move(LEFT)
+,bot(true)
 {
 	for(int i = 0; i < primitive_size; i++)
 	{
@@ -314,21 +318,20 @@ public:
 	Page(vector<Snake*> &snakes, vector<Food*> &foods);
 	void print() const;
 	void handle_eat_food(Snake *snake);
-	void message_win(string player) const;
-//	void win(string player, bool& end_game, thread& thread_for_read_input);
+	void message_win(string player);
 	void win(string player, bool& end_game);
 	void insert_new_food(Food *food); 
 	int get_lenght() const { return lenght;}
 	int get_width() const { return width;}
-//	void move_once(Move& move_type, bool& END_GAME, thread& thread_for_read_input);
-	void move_once(Move& move_type, bool& END_GAME);
+	void move_once(Move& move_type_1, Move& move_type_2, bool& END_GAME);
 	void handle_crash_wall(Snake *snake);	
 	bool is_inside_snakes(int x_food, int y_food);
 	Move define_direction_move(Snake *snake);
 	bool crash_to_another_snakes(Snake *snake);
-	void check_crash_to_head_another(Snake *snake, int index);	
+	void check_crash_to_head_another(Snake *snake);	
 	bool crash_to_snakes(Snake *snake, int x_head, int y_head);
 	void check_crash_wall(pair<int, int>& type);
+	int find_index_snake(Snake *snake);
 
 private:
 	vector<Snake*> snakes;
@@ -337,6 +340,7 @@ private:
 	const int width;
 	const char margins_shape;
 	const char empty_shape;
+	string message;
 };
 
 Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
@@ -349,7 +353,15 @@ Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
 {
 }	 
 
-void Page::check_crash_to_head_another(Snake *snake, int index)
+int Page::find_index_snake(Snake *snake)
+{
+	for(int i = 0; i < snakes.size(); i++)
+		if(snakes[i] == snake)
+			return i;
+	return -1;
+}
+
+void Page::check_crash_to_head_another(Snake *snake)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
@@ -358,18 +370,18 @@ void Page::check_crash_to_head_another(Snake *snake, int index)
 
 		else if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
 		{
-			this_thread::sleep_for(chrono::milliseconds(30000));
+//			this_thread::sleep_for(chrono::milliseconds(30000));
 
 			if(snakes[i]->get_score() == snake->get_score())
 			{
 				snakes.erase(snakes.begin() + i);
-				snakes.erase(snakes.begin() + index);
+				snakes.erase(snakes.begin() + find_index_snake(snake));
 				continue;
 			}
 			if(snakes[i]->get_score() > snake->get_score())
 			{
-					snakes.erase(snakes.begin() + index);
-					continue;		
+				snakes.erase(snakes.begin() + find_index_snake(snake));
+				continue;		
 			}
 			if(snakes[i]->get_score() < snake->get_score())
 			{
@@ -432,42 +444,53 @@ bool Page::crash_to_another_snakes(Snake *snake)
 	return false;
 }
 
-//void Page::move_once(Move& move_type, bool& END_GAME, thread& thread_for_read_input)
-void Page::move_once(Move& move_type, bool& END_GAME)
+void Page::move_once(Move& move_type_1, Move& move_type_2, bool& END_GAME)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
-		Move type = define_direction_move(snakes[i]);
+//		Move type = define_direction_move(snakes[i]);
+
+		if(snakes[i]->is_bot())
+			snakes[i]->move(define_direction_move(snakes[i]));
+	
+		else
+		{
+			if(snakes[i]->get_name() == "PLAYER 1")
+				snakes[i]->move(move_type_1);
+
+			else					
+				snakes[i]->move(move_type_2);
+		}
+		
+		//Move type = define_direction_move(snakes[i]);
 		//snakes[i]->move(define_direction_move(snakes[i]));	
-		snakes[i]->move(type);
+		//snakes[i]->move(type);
 		handle_crash_wall(snakes[i]);
 		handle_eat_food(snakes[i]);
 
 		if(snakes[i]->check_crash_to_self_body())
 		{
-			cout << snakes[i]->get_name() << " crash self  " << "t : " << type << endl;
+//			cout << snakes[i]->get_name() << " crash self  " << "t : " << type << endl;
 			snakes.erase(snakes.begin() + i);
-	        this_thread::sleep_for(chrono::milliseconds(30000));	
+//	        this_thread::sleep_for(chrono::milliseconds(30000));	
 			continue;
 		}
 				
 		if(crash_to_another_snakes(snakes[i]))
 		{
-			cout << snakes[i]->get_name() << " other  " << "t : " << type << endl;
+//			cout << snakes[i]->get_name() << " other  " << "t : " << type << endl;
 			snakes.erase(snakes.begin() + i);
-	        this_thread::sleep_for(chrono::milliseconds(30000));
+//	        this_thread::sleep_for(chrono::milliseconds(30000));
 			continue;
 		}
 	
-		check_crash_to_head_another(snakes[i], i);	
+		check_crash_to_head_another(snakes[i]);	
 	}
 
 	if(snakes.size() == 1)
-//		win(snakes[0]->get_name(), END_GAME, thread_for_read_input);
 		win(snakes[0]->get_name(), END_GAME);
 
 	else if(snakes.size() == 0)
-//		win("EQAUL", END_GAME, thread_for_read_input);
 		win("EQAUL", END_GAME);
 
 }
@@ -584,6 +607,7 @@ void Page::print() const
 		}
 		cout << endl;
 	}
+	cout << message << endl;
 }
 
 bool Page::is_inside_snakes(int x_food, int y_food)
@@ -611,23 +635,13 @@ void Page::insert_new_food(Food *food)
 	}				
 }
 
-void Page::message_win(string player) const
+void Page::message_win(string player)
 {
-    cout << endl;
-    if(player == "EQUAL")
-        cout << "\t\t\tEQUAL GAME\t\t\t" << endl;
+    if(player == "EQAUL")
+		message = "EQAUL";
     else     
-        cout << "\t\t\t" << player << " WIN\t\t\t" << endl;
+        message = player +  string(" WIN");
 }
-
-/*
-void Page::win(string player, bool& end_game, thread& thread_for_read_input)
-{
-    message_win(player);
-    end_game = true;
-    thread_for_read_input.join();
-}
-*/
 
 void Page::win(string player, bool& end_game)
 {
@@ -639,22 +653,51 @@ void Page::win(string player, bool& end_game)
 
 void change_move_type(Move& move_type, char input_move_type)
 {
-    if(input_move_type == KEY_UP)
+    if(input_move_type == KEY_UP or input_move_type == 'w')
         move_type = UP;
 
-    if(input_move_type == KEY_DOWN)
+    if(input_move_type == KEY_DOWN or input_move_type == 's')
         move_type = DOWN;
 
-    if(input_move_type == KEY_LEFT)
+    if(input_move_type == KEY_LEFT or input_move_type == 'a')
         move_type = LEFT;
 
-    if(input_move_type == KEY_RIGHT)
+    if(input_move_type == KEY_RIGHT or input_move_type == 'd')
         move_type = RIGHT;
 }
 
-void read_input(Move& move_type, bool& END_GAME)
+void read_input(Move& move_type_1, Move& move_type_2, bool& END_GAME)
 {
     while(!END_GAME)
+    {
+        // Black magic to prevent Linux from buffering keystrokes.
+        struct termios t;
+        tcgetattr(STDIN_FILENO, &t);
+        t.c_lflag &= ~ICANON;
+        tcsetattr(STDIN_FILENO, TCSANOW, &t);
+
+        char input_char1, input_char2, input_char3;
+        cin >> input_char1;
+
+        // PLAYER 2
+        if(input_char1 == 'w' or input_char1 == 's' or input_char1 == 'd' or input_char1 == 'a')
+            change_move_type(move_type_2, input_char1);
+
+        // PLAYER 1
+        if(input_char1 == 27)
+        {
+            cin >> input_char2;
+            cin >> input_char3;
+            if (input_char2 == 91)
+                change_move_type(move_type_1, input_char3);
+        }
+    }
+
+
+
+
+
+/*    while(!END_GAME)
     {
         // Black magic to prevent Linux from buffering keystrokes.
         struct termios t;
@@ -670,9 +713,10 @@ void read_input(Move& move_type, bool& END_GAME)
             cin >> input_char2;
             cin >> input_char3;
             if (input_char2 == 91) 
-                change_move_type(move_type, input_char3);
+                change_move_type(move_type_1, input_char3);
         }
     }
+*/
 }
 
 int main()
@@ -681,24 +725,36 @@ int main()
 
     // Setting
 	bool END_GAME {false};
-	Move move_type = LEFT;
+	Move move_type_1 = LEFT;
+	Move move_type_2 = LEFT;
 	int LEVEL = EASY;
 
 	// Object food game
 	vector<Snake*> snakes;
-	
-	Snake s1(5, 5, 5, "+", '+', BLUE);
-	Snake s2(15, 9, 5, "o", 'o', YELLOW);
-	Snake s3(15, 15, 5, "Q", 'Q', RED);
-	Snake s4(2, 2, 5, "w", 'w', GREEN);
-	Snake s5(7, 7, 5, "E", 'E', BLACK);
+
+	// s1 norm	
+	Snake s1(5, 5, 5, "PLAYER 1", '+', BLUE, false);
+
+	// s2 norm
+	Snake s2(15, 9, 5, "PLAYER 2", 'o', YELLOW, false);
+
+	// s3 bot
+	Snake s3(15, 15, 5, "Q", 'Q', RED, true);
+
+
+
+
+
+//	Snake s4(2, 2, 5, "w", 'w', GREEN);
+//	Snake s5(7, 7, 5, "E", 'E', BLACK);
 
 
 	snakes.push_back(&s1);
 	snakes.push_back(&s2);
 	snakes.push_back(&s3);
-	snakes.push_back(&s4);
-	snakes.push_back(&s5);
+
+//	snakes.push_back(&s4);
+//	snakes.push_back(&s5);
 
 	// Object food game
 	vector<Food*> foods;
@@ -714,15 +770,13 @@ int main()
 	// Page setting
 	Page page(snakes, foods);
 		
-//	thread thread_for_read_input(read_input, ref(move_type), ref(END_GAME));
+	thread thread_for_read_input(read_input, ref(move_type_1), ref(move_type_2), ref(END_GAME));
 
 	while(!END_GAME)
 	{
         this_thread::sleep_for(chrono::milliseconds(LEVEL));
-//		page.move_once(move_type, END_GAME, thread_for_read_input);
-		page.move_once(move_type, END_GAME);
-		if(!END_GAME)
-			page.print();	
+		page.move_once(move_type_1, move_type_2, END_GAME);
+		page.print();	
 	}
-	page.print();	
+	thread_for_read_input.join();
 }
