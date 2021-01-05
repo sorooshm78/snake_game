@@ -112,8 +112,8 @@ public:
 	string get_color() const {return color;}
 	string get_name() const {return name;}
 	pair<int, int> next_move_coordinates(Move move);
-	bool is_body(int x, int y);
-	bool is_bot(){ return bot; }	
+	bool is_body(int x, int y) const;
+	bool is_bot() const { return bot; }	
 	
 private:
 	void to_corruct_direction(Move& direction);
@@ -165,7 +165,7 @@ pair<int, int> Snake::next_move_coordinates(Move direction)
         return pair<int, int>(x_head_snake, y_head_snake + 1);
 }
 
-bool Snake::is_body(int x, int y)
+bool Snake::is_body(int x, int y) const 
 {
 	for(int i = 1; i < coordinates.size(); i++)
 		if(coordinates[i].first == x and coordinates[i].second == y)
@@ -307,6 +307,10 @@ private:
 	const int width;
 	const char margins_shape;
 	const char empty_shape;
+	const int margins_up;
+    const int margins_down;
+    const int margins_left;
+    const int margins_right;
 	string message;
 };
 
@@ -317,6 +321,10 @@ Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
 ,width(20)
 ,margins_shape('#')
 ,empty_shape('.')
+,margins_up(0)
+,margins_down(width - 1)
+,margins_left(0)
+,margins_right(lenght - 1)
 {
 }	 
 
@@ -465,11 +473,6 @@ void Page::handle_eat_food(Snake *snake)
 
 void Page::check_crash_wall(pair<int, int>& type)
 {
-    int margins_up = 0;
-    int margins_down = width - 1;
-    int margins_left = 0;
-    int margins_right = lenght - 1;
-
     // Wall left
     if(type.first == margins_left)
 		type.first = margins_right - 1;
@@ -490,11 +493,6 @@ void Page::check_crash_wall(pair<int, int>& type)
 
 void Page::handle_crash_wall(Snake *snake)
 {
-    int margins_up = 0;
-    int margins_down = width - 1;
-    int margins_left = 0;
-    int margins_right = lenght - 1;
-
     // Wall left
     if(snake->get_x_head() == margins_left)
 		snake->change_x_head(margins_right - 1);
