@@ -283,22 +283,27 @@ class Page
 {
 public:
 	Page(vector<Snake*> &snakes, vector<Food*> &foods);
-	void print() const;
+	void print() const;                  
 	void handle_eat_food(Snake *snake);
-	void message_win(string player);
-	void win(string player, bool& end_game);
 	void insert_new_food(Food *food); 
 	int get_lenght() const { return lenght;}
 	int get_width() const { return width;}
 	void move_once(Move& direction_1, Move& direction_2, bool& END_GAME);
-	void handle_crash_wall(Snake *snake);	
+
+
+	void handle_crash_wall(Snake *snake);	//this a
 	bool is_inside_snakes(int x_food, int y_food);
-	Move define_direction_move(Snake *snake);
-	bool crash_to_another_snakes(Snake *snake);
-	void check_crash_to_head_another(Snake *snake);	
-	bool crash_to_snakes(Snake *snake, int x_head, int y_head);
-	void check_crash_wall(pair<int, int>& type);
+	void check_crash_wall(pair<int, int>& type); // this a
+
+
+
+
 	int find_index_snake(Snake *snake);
+	void check_end_game(bool &end_game);
+	Move determine_direction_move_bot(Snake *snake);
+	bool check_crash_to_another_snakes_body(string name, int x_head, int y_head);
+	bool check_crash_to_another_snakes_head(string name, int x_head, int y_head);
+	void check_and_handle_crash_to_another_snakes_head(Snake *snake); 			
 
 private:
 	vector<Snake*> snakes;
@@ -336,14 +341,27 @@ int Page::find_index_snake(Snake *snake)
 	return -1;
 }
 
-void Page::check_crash_to_head_another(Snake *snake)
+bool Page::check_crash_to_another_snakes_head(string name, int x_head, int y_head)
+{
+	for(int i = 0; i < snakes.size(); i++)
+	{
+		if(snakes[i]->get_name() == name)
+			continue;
+
+		if(snakes[i]->get_x_head() == x_head and snakes[i]->get_y_head() == y_head)
+			return true;
+	}
+	return false;
+}
+
+void Page::check_and_handle_crash_to_another_snakes_head(Snake *snake)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
 		if(snakes[i]->get_name() == snake->get_name())
 			continue;
 
-		else if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
+		if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
 		{
 			if(snakes[i]->get_score() == snake->get_score())
 			{
@@ -365,22 +383,25 @@ void Page::check_crash_to_head_another(Snake *snake)
 	}
 }
 
-Move Page::define_direction_move(Snake *snake)
+Move Page::determine_direction_move_bot(Snake *snake)
 {
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
 		pair<int, int> next = snake->next_move_coordinates(Move(direction));
-
+		
 		//FIX make coordinates next move
 		check_crash_wall(next);
 
 		if(snake->is_coordinates(next.first, next.second))
 			continue;
-			
-		if(crash_to_snakes(snake, next.first, next.second))
+
+		if(check_crash_to_another_snakes_body(snake->get_name(), next.first, next.second))
 			continue;
-	
+
+		if(check_crash_to_another_snakes_head(snake->get_name(), next.first, next.second))
+			continue; 
+
 		for(int i = 0; i < foods.size(); i++)
 			if(next.first == foods[i]->get_x() and next.second == foods[i]->get_y())
 				return Move(direction);
@@ -394,26 +415,14 @@ Move Page::define_direction_move(Snake *snake)
 		return candidate[rand()%candidate.size()];
 }
 
-bool Page::crash_to_snakes(Snake *snake, int x_head, int y_head)
+bool Page::check_crash_to_another_snakes_body(string name, int x_head, int y_head)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
-		if(snakes[i]->get_name() == snake->get_name())
+		if(snakes[i]->get_name() == name)
 			continue;
 
-		else if(snakes[i]->is_coordinates(x_head, y_head))
-			return true;
-	}
-	return false;
-}
-
-bool Page::crash_to_another_snakes(Snake *snake)
-{
-	for(int i = 0; i < snakes.size(); i++)
-	{
-		if(snakes[i]->get_name() == snake->get_name())
-			continue;
-		else if(snakes[i]->is_body(snake->get_x_head(), snake->get_y_head()))
+		if(snakes[i]->is_body(x_head, y_head))
 			return true;
 	}
 	return false;
@@ -424,7 +433,7 @@ void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 	for(int i = 0; i < snakes.size(); i++)
 	{
 		if(snakes[i]->is_bot())
-			snakes[i]->move(define_direction_move(snakes[i]));
+			snakes[i]->move(determine_direction_move_bot(snakes[i]));
 	
 		else
 		{
@@ -444,21 +453,31 @@ void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 			continue;
 		}
 				
-		if(crash_to_another_snakes(snakes[i]))
+		if(check_crash_to_another_snakes_head(snakes[i]->get_name(), snakes[i]->get_x_head(), snakes[i]->get_y_head()))
 		{
 			snakes.erase(snakes.begin() + i);
 			continue;
 		}
-	
-		check_crash_to_head_another(snakes[i]);	
+
+		check_and_handle_crash_to_another_snakes_head(snakes[i]);
 	}
 
+	check_end_game(END_GAME);
+}
+
+void Page::check_end_game(bool &end_game)
+{
 	if(snakes.size() == 1)
-		win(snakes[0]->get_name(), END_GAME);
+	{
+		message = snakes[0]->get_name() +  " WIN";
+		end_game = true;
+	}
 
 	else if(snakes.size() == 0)
-		win("EQAUL", END_GAME);
-
+	{
+		message = "EQAUL";
+		end_game = true;
+	}
 }
 
 void Page::handle_eat_food(Snake *snake) 
@@ -590,20 +609,6 @@ void Page::insert_new_food(Food *food)
 			break;
 		}
 	}				
-}
-
-void Page::message_win(string player)
-{
-    if(player == "EQAUL")
-		message = "EQAUL";
-    else     
-        message = player +  string(" WIN");
-}
-
-void Page::win(string player, bool& end_game)
-{
-    message_win(player);
-    end_game = true;
 }
 
 //////////////////////////////////////////////////////////////////
