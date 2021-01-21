@@ -94,6 +94,7 @@ void Food::change_coordinates(int x, int y)
 
 //////////////////////////////////////////////////////////////////
 
+
 class Snake
 {
 public:
@@ -683,7 +684,7 @@ int main()
 
 	while(!END_GAME)
 	{
-        this_thread::sleep_for(chrono::milliseconds(LEVEL));
+        this_thread::sleep_for(chrono::milliseconds(10));
 		page.move_once(direction_1, direction_2, END_GAME);
 		page.print();	
 	}
