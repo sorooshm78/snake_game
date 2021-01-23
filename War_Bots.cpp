@@ -92,8 +92,8 @@ void Food::change_coordinates(int x, int y)
 	this->y = y;
 }
 
-//////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////
 
 class Snake
 {
@@ -116,7 +116,7 @@ public:
 	bool is_body(int x, int y) const;
 	bool is_bot() const { return bot; }	
 	
-private:
+//private:
 	void to_corruct_direction(Move& direction);
 	void add_new_head(Move& direction);
 	void cut_tail();
@@ -279,6 +279,19 @@ void Snake::to_corruct_direction(Move& direction)
     }
     last_move = direction;
 }
+
+//////////////////////////////////////////////////////////////////
+
+class Sbot : public Snake
+{
+public:
+	Sbot(int x, int y, int size, string name, char shape, string color, bool bot);
+	void print(){cout << name << endl;}
+};
+
+Sbot::Sbot(int x, int y, int size, string name, char shape, string color, bool bot)
+:Snake(x, y, size, name, shape, color, bot)
+{}
 
 //////////////////////////////////////////////////////////////////
 
@@ -464,11 +477,12 @@ void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
-		if(snakes[i]->get_name() == "Soroosh BOT 0" or snakes[i]->get_name() == "Soroosh BOT o")
+/*		if(snakes[i]->get_name() == "Soroosh BOT 0" or snakes[i]->get_name() == "Soroosh BOT o")
 			snakes[i]->move(determine_direction_move_bot_soroosh(snakes[i]));
 
 		else if(snakes[i]->get_name() == "Mehran BOT 0" or snakes[i]->get_name() == "Mehran BOT o")
 			snakes[i]->move(determine_direction_move_bot_mehran(snakes[i]));
+*/
 		
 		handle_crash_wall(snakes[i]);
 		handle_eat_food(snakes[i]);
@@ -657,7 +671,9 @@ int main()
 	vector<Snake*> snakes;
 	vector<Food*> foods;
 
-	Snake B1(22, 3, 5, "Soroosh BOT 0", '0', BLUE, BOT);
+	Sbot B1(22, 3, 5, "Soroosh BOT 0", '0', BLUE, BOT);
+
+//	Snake B1(22, 3, 5, "Soroosh BOT 0", '0', BLUE, BOT);
 	Snake B2(3, 16, 5, "Soroosh BOT o", 'o', BLUE, BOT);
 
 	Snake B3(3, 3, 5, "Mehran BOT 0", '0', GREEN, BOT);
@@ -681,11 +697,13 @@ int main()
 	
 	// Page setting
 	Page page(snakes, foods);
+	page.print();
 
 	while(!END_GAME)
 	{
-        this_thread::sleep_for(chrono::milliseconds(10));
+        this_thread::sleep_for(chrono::milliseconds(LEVEL));
 		page.move_once(direction_1, direction_2, END_GAME);
 		page.print();	
 	}
+
 }
