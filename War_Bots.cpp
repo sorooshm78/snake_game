@@ -309,13 +309,7 @@ void Snake::handle_crash_wall(Page *page)
 		change_y_head(page->margins_up + 1);
 }
 
-bool Snake::check_eat_food(Page *page) 
-{
-	for(int i = 0; i < page->foods.size(); i++)
-		if(get_x_head() == page->foods[i]->get_x() and get_y_head() == page->foods[i]->get_y())	
-			return true;
-	return false;
-}
+
 
 void Snake::handle_eat_food(Page *page) 
 {
@@ -340,18 +334,18 @@ public:
 	void print(){cout << name << endl;}
 };
 
-Move Page::determine_direction_move_bot()
+Move Sbot::determine_direction_move_bot(Page *page)
 {
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
 		pair<int, int> next = next_move_coordinates(Move(direction));
-		Snake s(next.first, next.second, 5, get_name(), '+', RED, BOT);	
-		Snake *virtual_snake = &s;
+		Sbot s(next.first, next.second, 5, get_name(), '+', RED, BOT);	
+		Sbot *virtual_snake = &s;
 
 		handle_crash_wall(page);
 
-		if(snake->is_coordinates(virtual_snake->get_x_head(), virtual_snake->get_y_head()))
+		if(this->is_coordinates(virtual_snake->get_x_head(), virtual_snake->get_y_head()))
 			continue;
 
 		if(page->check_crash_to_another_snakes_body(virtual_snake))
@@ -390,8 +384,8 @@ public:
 	bool is_coordinates_snakes(int x_food, int y_food);
 	int find_index_snake(Snake *snake);
 	void check_end_game(bool &end_game);
-	Move determine_direction_move_bot_soroosh(Snake *snake);
-	Move determine_direction_move_bot_mehran(Snake *snake);
+//	Move determine_direction_move_bot_soroosh(Snake *snake);
+//	Move determine_direction_move_bot_mehran(Snake *snake);
 	bool check_crash_to_another_snakes_body(Snake *snake);
 	bool check_crash_to_another_snakes_head(Snake *snake);
 	void check_and_handle_crash_to_another_snakes_head(Snake *snake); 			
@@ -399,7 +393,7 @@ public:
 //	int get_margins_down{return margins_down;}
 //	int get_margins_right{return margins_right;}
 //	int get_margins_left{return margins_left;}
-
+	bool check_eat_food(Snake *snake) 
 private:
 	vector<Snake*> snakes;
 	vector<Food*> foods;
@@ -434,6 +428,14 @@ int Page::find_index_snake(Snake *snake)
 		if(snakes[i] == snake)
 			return i;
 	return -1;
+}
+
+bool Snake::check_eat_food(Snake *snake) 
+{
+	for(int i = 0; i < foods.size(); i++)
+		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())	
+			return true;
+	return false;
 }
 
 bool Page::check_crash_to_another_snakes_head(Snake *snake)
@@ -729,10 +731,10 @@ int main()
 	Sbot B1(22, 3, 5, "Soroosh BOT 0", '0', BLUE, BOT);
 
 //	Snake B1(22, 3, 5, "Soroosh BOT 0", '0', BLUE, BOT);
-	Snake B2(3, 16, 5, "Soroosh BOT o", 'o', BLUE, BOT);
+//	Snake B2(3, 16, 5, "Soroosh BOT o", 'o', BLUE, BOT);
 
-	Snake B3(3, 3, 5, "Mehran BOT 0", '0', GREEN, BOT);
-	Snake B4(22, 16, 5, "Mehran BOT o", 'o', GREEN, BOT);
+//	Snake B3(3, 3, 5, "Mehran BOT 0", '0', GREEN, BOT);
+//	Snake B4(22, 16, 5, "Mehran BOT o", 'o', GREEN, BOT);
 
 	Food f1(15, 10, 1, '1', BOLDYELLOW);
 	Food f2(10, 10, 3, '3', BOLDYELLOW);
@@ -745,9 +747,9 @@ int main()
 	menu(bots);
 	
 	snakes.push_back(&B1);
-	snakes.push_back(&B2);
-	snakes.push_back(&B3);
-	snakes.push_back(&B4);
+//	snakes.push_back(&B2);
+//	snakes.push_back(&B3);
+//	snakes.push_back(&B4);
 
 	
 	// Page setting
