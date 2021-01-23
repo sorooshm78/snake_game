@@ -116,7 +116,7 @@ public:
 	bool is_bot() const { return bot; }	
 
 	void move(Page *page);
-	virtual Move determine_direction_move_bot();
+	virtual Move determine_direction_move_bot() = 0;
 	void handle_crash_wall(Page *page);	
 	bool check_eat_food(Page *page);
 	void handle_eat_food(Page *page) 
@@ -335,7 +335,7 @@ void Snake::handle_eat_food(Page *page)
 class Sbot : public Snake
 {
 public:
-	Move determine_direction_move_bot_soroosh();
+	Move determine_direction_move_bot(Page *page);
 	Sbot(int x, int y, int size, string name, char shape, string color, bool bot);
 	void print(){cout << name << endl;}
 };
@@ -345,19 +345,19 @@ Move Page::determine_direction_move_bot()
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
-		pair<int, int> next = snake->next_move_coordinates(Move(direction));
-		Snake s(next.first, next.second, 5, snake->get_name(), '+', RED, BOT);	
+		pair<int, int> next = next_move_coordinates(Move(direction));
+		Snake s(next.first, next.second, 5, get_name(), '+', RED, BOT);	
 		Snake *virtual_snake = &s;
 
-		handle_crash_wall(virtual_snake);
+		handle_crash_wall(page);
 
 		if(snake->is_coordinates(virtual_snake->get_x_head(), virtual_snake->get_y_head()))
 			continue;
 
-		if(check_crash_to_another_snakes_body(virtual_snake))
+		if(page->check_crash_to_another_snakes_body(virtual_snake))
 			continue;
 
-		if(check_crash_to_another_snakes_head(virtual_snake))
+		if(page->check_crash_to_another_snakes_head(virtual_snake))
 			continue; 
 		
 		if(check_eat_food(virtual_snake))
