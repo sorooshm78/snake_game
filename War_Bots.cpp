@@ -116,7 +116,7 @@ public:
 	bool is_bot() const { return bot; }	
 
 	void move(Page *page);
-	virtual Move determine_direction_move_bot_soroosh();
+	virtual Move determine_direction_move_bot();
 	void handle_crash_wall(Page *page);	
 	bool check_eat_food(Page *page);
 	void handle_eat_food(Page *page) 
@@ -248,7 +248,7 @@ void Snake::cut_tail()
 
 void Snake::move(Page *page)
 {
-	Move direction = determine_direction_move_bot_soroosh();
+	Move direction = determine_direction_move_bot();
 
 	handle_crash_wall(page);
 	handle_eat_food(page);
@@ -292,44 +292,39 @@ void Snake::to_corruct_direction(Move& direction)
 
 void Snake::handle_crash_wall(Page *page)
 {
-	margins_up = page->get_margins_up;
-	margins_down = page->get_margins_down;
-	margins_right = page->get_margins_right;
-	margins_left = page->get_margins_left;
-
     // Wall left
-    if(get_x_head() == margins_left)
-		change_x_head(margins_right - 1);
+    if(get_x_head() == page->margins_left)
+		change_x_head(page->margins_right - 1);
 
     // Wall right
-    if(get_x_head() == margins_right)
-		change_x_head(margins_left + 1);
+    if(get_x_head() == page->margins_right)
+		change_x_head(page->margins_left + 1);
 
     // Wall up
-    if(get_y_head() == margins_up)
-		change_y_head(margins_down - 1);
+    if(get_y_head() == page->margins_up)
+		change_y_head(page->margins_down - 1);
 
     // Wall down
-    if(get_y_head() == margins_down)
-		change_y_head(margins_up + 1);
+    if(get_y_head() == page->margins_down)
+		change_y_head(page->margins_up + 1);
 }
 
 bool Snake::check_eat_food(Page *page) 
 {
-	for(int i = 0; i < foods.size(); i++)
-		if(get_x_head() == foods[i]->get_x() and get_y_head() == foods[i]->get_y())	
+	for(int i = 0; i < page->foods.size(); i++)
+		if(get_x_head() == page->foods[i]->get_x() and get_y_head() == page->foods[i]->get_y())	
 			return true;
 	return false;
 }
 
 void Snake::handle_eat_food(Page *page) 
 {
-	for(int i = 0; i < foods.size(); i++)
+	for(int i = 0; i < page->foods.size(); i++)
 	{
-		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())
+		if(get_x_head() == page->foods[i]->get_x() and get_y_head() == page->foods[i]->get_y())
 		{	
-			snake->increase_size(foods[i]->get_val());
-			insert_new_food(foods[i]);
+			increase_size(page->foods[i]->get_val());
+			page->insert_new_food(page->foods[i]);
 		}
 	}
 }
@@ -345,7 +340,7 @@ public:
 	void print(){cout << name << endl;}
 };
 
-Move Page::determine_direction_move_bot_soroosh()
+Move Page::determine_direction_move_bot()
 {
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
@@ -400,10 +395,10 @@ public:
 	bool check_crash_to_another_snakes_body(Snake *snake);
 	bool check_crash_to_another_snakes_head(Snake *snake);
 	void check_and_handle_crash_to_another_snakes_head(Snake *snake); 			
-	int get_margins_up{return margins_up;}
-	int get_margins_down{return margins_down;}
-	int get_margins_right{return margins_right;}
-	int get_margins_left{return margins_left;}
+//	int get_margins_up{return margins_up;}
+//	int get_margins_down{return margins_down;}
+//	int get_margins_right{return margins_right;}
+//	int get_margins_left{return margins_left;}
 
 private:
 	vector<Snake*> snakes;
