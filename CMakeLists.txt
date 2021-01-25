@@ -7,8 +7,8 @@ project(snake_network_game)
 add_executable(snake main.cpp)
 target_link_libraries(snake pthread)
 
-add_executable(War War_Bots.cpp)
-target_link_libraries(War pthread)
+#add_executable(War War_Bots.cpp)
+#target_link_libraries(War pthread)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/memory/memory_leak
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
