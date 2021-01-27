@@ -119,7 +119,7 @@ public:
 	virtual Move determine_direction_move_bot() = 0;
 	void handle_crash_wall(Page *page);	
 	bool check_eat_food(Page *page);
-	void handle_eat_food(Page *page) 
+	void handle_eat_food(Page *page);
 
 //private:
 	void to_corruct_direction(Move& direction);

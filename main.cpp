@@ -44,56 +44,78 @@ enum Move{LEFT, RIGHT, UP, DOWN};
 
 using namespace std;
 
-class Page;
-class Food;
-class Snake;
+//class Page;
+//class Food;
+//class Snake;
+//class Point;
+
+//////////////////////////////////////////////////////////////////
+
+class Point
+{
+public:
+	Point(int x, int y);
+	void operator=(const Point& p);
+
+	int x;
+	int y;
+};
+
+Point::Point(int x ,int y)
+:x(x),
+y(y)
+{}
+
+void Point::operator=(const Point& p)
+{
+	this->x = p.x;
+	this->y = p.y;
+}
 
 //////////////////////////////////////////////////////////////////
 
 class Food
 {
 public:
-	Food(int x, int y, int val, char shape, string color);
-	bool is_coordinates(int x, int y) const;
-	void change_coordinates(int x, int y);
-	int get_x() const { return x;}
-	int get_y() const { return y;}
+	Food(Point *point, int val, char shape, string color);
+	bool is_coordinates(Point p) const;
+	void change_coordinates(Point p);
+	int get_x() const { return point->x;}
+	int get_y() const { return point->y;}
+	Point* get_point(){ return point;}
 	char get_shape() const { return shape;}
 	int get_val() const { return value;}
 	string get_color() const { return color;}
 
-private:
-	int x;
-	int y;
+private:	
+	Point *point;
 	const int value;
 	const char shape;
 	const string color;
 };
 
-Food::Food(int x, int y, int val, char shape, string color)
-:x(x)
-,y(y)
+Food::Food(Point *point, int val, char shape, string color)
+:point(point)
 ,value(val)
 ,shape(shape)
 ,color(color)
 {
 }
 
-bool Food::is_coordinates(int x, int y) const
+bool Food::is_coordinates(Point p) const
 {
-	if(this->x == x and this->y == y)
+	if(point->x == p.x and point->y == p.y)
 		return true;
 	return false;
 }
 
-void Food::change_coordinates(int x, int y)
+void Food::change_coordinates(Point p)
 {
-	this->x = x;
-	this->y = y;
+	point = &p;
 }
 
 //////////////////////////////////////////////////////////////////
-
+/*
 class Snake
 {
 public:
@@ -672,11 +694,12 @@ void menu(bool& bots, bool& player1, bool& player2)
 		}
 	}
 }
-
+*/
 int main()
 {
 	srand(time(0));	
 
+/*
     // Setting
 	bool END_GAME {false};
 	Move direction_1 = LEFT;
@@ -733,5 +756,5 @@ int main()
 		page.move_once(direction_1, direction_2, END_GAME);
 		page.print();	
 	}
-	thread_for_read_input.join();
+	thread_for_read_input.join();*/
 }
