@@ -55,7 +55,8 @@ class Point
 {
 public:
 	Point(int x, int y);
-	void operator=(const Point& p);
+//	void operator=(const Point& p);
+	bool operator==(const Point& p);
 
 	int x;
 	int y;
@@ -65,36 +66,48 @@ Point::Point(int x ,int y)
 :x(x),
 y(y)
 {}
-
-void Point::operator=(const Point& p)
+	
+bool Point::operator==(const Point& p)
 {
-	this->x = p.x;
-	this->y = p.y;
+	if(p.x == x and p.y == y)
+		return true;
+	return false;
 }
+
+/*void Point::operator=(const Point &p)
+{
+	x = p.x;
+	y = p.y;
+}*/
 
 //////////////////////////////////////////////////////////////////
 
 class Food
 {
 public:
-	Food(Point *point, int val, char shape, string color);
+	Food(Point point, int val, char shape, string color);
 	bool is_coordinates(Point p) const;
 	void change_coordinates(Point p);
-	int get_x() const { return point->x;}
-	int get_y() const { return point->y;}
-	Point* get_point(){ return point;}
+	int get_x() const { return point.x;}
+	int get_y() const { return point.y;}
+	Point get_point(){ return point;}
 	char get_shape() const { return shape;}
 	int get_val() const { return value;}
 	string get_color() const { return color;}
+	void print()
+	{
+		cout << "x:" << point.x << endl;
+		cout << "y:" << point.y << endl;
+	}
 
 private:	
-	Point *point;
+	Point point;
 	const int value;
 	const char shape;
 	const string color;
 };
 
-Food::Food(Point *point, int val, char shape, string color)
+Food::Food(Point point, int val, char shape, string color)
 :point(point)
 ,value(val)
 ,shape(shape)
@@ -104,27 +117,36 @@ Food::Food(Point *point, int val, char shape, string color)
 
 bool Food::is_coordinates(Point p) const
 {
-	if(point->x == p.x and point->y == p.y)
+	if(point.x == p.x and point.y == p.y)
 		return true;
 	return false;
 }
 
 void Food::change_coordinates(Point p)
 {
-	point = &p;
+	point = p;
 }
 
 //////////////////////////////////////////////////////////////////
-/*
+
 class Snake
 {
 public:
-	Snake(int x, int y, int size, string name, char shape, string color, bool bot);
-	bool check_crash_to_self_body() const;
-	void move(Move direction);
-	bool is_coordinates(int x, int y) const;
+	Snake(Point point, int size, string name, char shape, string color, bool bot);
+	void print()
+	{
+		for(int i = 0; i < coordinates.size(); i++)
+		{
+			cout << coordinates[i].x << "  " << coordinates[i].y << endl;
+		}
+	}
+
+	bool is_coordinates(Point point) const;
 	void change_x_head(int x);
 	void change_y_head(int y);
+
+/*	bool check_crash_to_self_body() const;
+	void move(Move direction);
 	void increase_size(int val);
 	int get_score() const {return score;}
 	char get_shape() const {return shape;}
@@ -141,34 +163,53 @@ private:
 	void to_corruct_direction(Move& direction);
 	void add_new_head(Move& direction);
 	void cut_tail();
-
-	vector<pair<int, int>> coordinates;
+*/
+	vector<Point> coordinates;
 	Move last_move;
 	int score;
 	int increase_lenght;
 	const char shape;
-	const int primitive_size;
 	const string name;
 	const string color;
 	const bool bot;
 };
 
-Snake::Snake(int x, int y, int size, string name, char shape, string color, bool bot)
+Snake::Snake(Point point, int size, string name, char shape, string color, bool bot)
 :color(color)
 ,name(name)
 ,increase_lenght(0)
-,primitive_size(size)
 ,shape(shape)
 ,score(0)
 ,last_move(LEFT)
 ,bot(bot)
 {
-	for(int i = 0; i < primitive_size; i++)
+	for(int i = 0; i < size; i++)
 	{
-		coordinates.push_back(pair<int, int>(x + i, y));
+		coordinates.push_back(Point(point.x + i, point.y));
 	}
 }
 
+bool Snake::is_coordinates(Point point) const
+{
+	for(int i = 0; i < coordinates.size(); i++)
+	{
+		if(point == coordinates[i])
+			return true;
+	}
+	return false; 
+}
+
+void Snake::change_x_head(int x)
+{
+	coordinates[0].x = x;
+}
+
+void Snake::change_y_head(int y)
+{
+	coordinates[0].y = y;
+}
+
+/*
 pair<int, int> Snake::next_move_coordinates(Move direction)
 {
 	int x_head_snake = get_x_head();
@@ -201,26 +242,6 @@ void Snake::increase_size(int val)
 {
 	increase_lenght += val;
 	score += val;
-}
-
-void Snake::change_x_head(int x)
-{
-	coordinates[0].first = x;
-}
-
-void Snake::change_y_head(int y)
-{
-	coordinates[0].second = y;
-}
-
-bool Snake::is_coordinates(int x, int y) const
-{
-	for(int i = 0; i < coordinates.size(); i++)
-	{
-		if(x == coordinates[i].first and y == coordinates[i].second)
-			return true;
-	}
-	return false; 
 }
 
 bool Snake::check_crash_to_self_body() const
@@ -697,9 +718,15 @@ void menu(bool& bots, bool& player1, bool& player2)
 */
 int main()
 {
-	srand(time(0));	
+	Snake s(Point(0, 0), 5, "BOT 1", 'Q', MAGENTA, BOT);
+	cout << s.is_coordinates(Point(0, 0)) << endl;
+	s.change_y_head(10);
+	s.print();
+
 
 /*
+	srand(time(0));	
+
     // Setting
 	bool END_GAME {false};
 	Move direction_1 = LEFT;
