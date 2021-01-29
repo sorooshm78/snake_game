@@ -142,28 +142,29 @@ public:
 	}
 
 	bool is_coordinates(Point point) const;
-	void change_x_head(int x);
-	void change_y_head(int y);
-
-/*	bool check_crash_to_self_body() const;
-	void move(Move direction);
-	void increase_size(int val);
+	void change_x_head(int x) { coordinates[0].x = x; }
+	void change_y_head(int y) {	coordinates[0].y = y; }
+	void change_head(Point point) {	coordinates[0] = point;}
+	int get_x_head() const { return coordinates[0].x;}
+	int get_y_head() const { return coordinates[0].y;}
+	Point get_head() const { return coordinates[0]; }
+	bool is_bot() const { return bot; }	
 	int get_score() const {return score;}
 	char get_shape() const {return shape;}
 	int get_size() const {return coordinates.size();}
-	int get_x_head() const {return coordinates[0].first;}
-	int get_y_head() const {return coordinates[0].second;}
 	string get_color() const {return color;}
 	string get_name() const {return name;}
-	pair<int, int> next_move_coordinates(Move move);
-	bool is_body(int x, int y) const;
-	bool is_bot() const { return bot; }	
-	
+	void increase_size(int val);
+	void move(Move direction);
+	Point next_move_coordinates(Move move);
+	bool is_body(Point point) const;
+	bool check_crash_to_self_body() const;
+
 private:
 	void to_corruct_direction(Move& direction);
 	void add_new_head(Move& direction);
 	void cut_tail();
-*/
+
 	vector<Point> coordinates;
 	Move last_move;
 	int score;
@@ -199,88 +200,10 @@ bool Snake::is_coordinates(Point point) const
 	return false; 
 }
 
-void Snake::change_x_head(int x)
-{
-	coordinates[0].x = x;
-}
-
-void Snake::change_y_head(int y)
-{
-	coordinates[0].y = y;
-}
-
-/*
-pair<int, int> Snake::next_move_coordinates(Move direction)
-{
-	int x_head_snake = get_x_head();
-    int y_head_snake = get_y_head();
-
-    if(direction == LEFT)
-	 	return pair<int, int>(x_head_snake - 1, y_head_snake);
-
-    if(direction == RIGHT)
-        return pair<int, int>(x_head_snake + 1, y_head_snake);
-
-    if(direction == UP)
-        return pair<int, int>(x_head_snake, y_head_snake - 1);
-
-    if(direction == DOWN)
-        return pair<int, int>(x_head_snake, y_head_snake + 1);
-
-	return  pair<int, int>(-1, -1);
-}
-
-bool Snake::is_body(int x, int y) const 
-{
-	for(int i = 1; i < coordinates.size(); i++)
-		if(coordinates[i].first == x and coordinates[i].second == y)
-			return true;
-	return false;
-}
-
 void Snake::increase_size(int val)
 {
 	increase_lenght += val;
 	score += val;
-}
-
-bool Snake::check_crash_to_self_body() const
-{
-    int x_head_snake = get_x_head();
-    int y_head_snake = get_y_head();
-
-    for(size_t i = 1; i < coordinates.size(); i++)
-    {
-        if(x_head_snake == coordinates[i].first and y_head_snake == coordinates[i].second)
-            return true;
-    }
-    return false;
-}
-
-void Snake::add_new_head(Move& direction)
-{
-	int x_head_snake = get_x_head();
-    int y_head_snake = get_y_head();
-
-    if(direction == LEFT)
-        coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake - 1, y_head_snake));
-
-    if(direction == RIGHT)
-        coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake + 1, y_head_snake));
-
-    if(direction == UP)
-        coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake - 1));
-
-    if(direction == DOWN)
-        coordinates.insert(coordinates.begin(), pair<int, int>(x_head_snake, y_head_snake + 1));
-}
-
-void Snake::cut_tail()
-{
-	if(increase_lenght == 0)
-		coordinates.pop_back();
-	else if(increase_lenght != 0)
-		increase_lenght --;
 }
 
 void Snake::move(Move direction)
@@ -322,8 +245,75 @@ void Snake::to_corruct_direction(Move& direction)
     last_move = direction;
 }
 
-//////////////////////////////////////////////////////////////////
+void Snake::add_new_head(Move& direction)
+{
+	int x_head_snake = get_x_head();
+    int y_head_snake = get_y_head();
 
+    if(direction == LEFT)
+        coordinates.insert(coordinates.begin(), Point(x_head_snake - 1, y_head_snake));
+
+    if(direction == RIGHT)
+        coordinates.insert(coordinates.begin(), Point(x_head_snake + 1, y_head_snake));
+
+    if(direction == UP)
+        coordinates.insert(coordinates.begin(), Point(x_head_snake, y_head_snake - 1));
+
+    if(direction == DOWN)
+        coordinates.insert(coordinates.begin(), Point(x_head_snake, y_head_snake + 1));
+}
+
+void Snake::cut_tail()
+{
+	if(increase_lenght == 0)
+		coordinates.pop_back();
+	else if(increase_lenght != 0)
+		increase_lenght --;
+}
+
+Point Snake::next_move_coordinates(Move direction)
+{
+	int x_head_snake = get_x_head();
+    int y_head_snake = get_y_head();
+
+    if(direction == LEFT)
+	 	return Point(x_head_snake - 1, y_head_snake);
+
+    if(direction == RIGHT)
+        return Point(x_head_snake + 1, y_head_snake);
+
+    if(direction == UP)
+        return Point(x_head_snake, y_head_snake - 1);
+
+    if(direction == DOWN)
+        return Point(x_head_snake, y_head_snake + 1);
+
+	return  Point(-1, -1);
+}
+
+
+bool Snake::is_body(Point point) const 
+{
+	for(int i = 1; i < coordinates.size(); i++)
+		if(point == coordinates[i])
+			return true;
+	return false;
+}
+
+bool Snake::check_crash_to_self_body() const
+{
+	Point head = get_head();
+	
+	for(size_t i = 1; i < coordinates.size(); i++)
+    {
+        if(head == coordinates[i])
+            return true;
+    }
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////
+/*
 class Page
 {
 public:
@@ -720,10 +710,9 @@ int main()
 {
 	Snake s(Point(0, 0), 5, "BOT 1", 'Q', MAGENTA, BOT);
 	cout << s.is_coordinates(Point(0, 0)) << endl;
-	s.change_y_head(10);
+	s.change_head(Point(1 ,0));
 	s.print();
-
-
+	cout << s.check_crash_to_self_body() << endl;
 /*
 	srand(time(0));	
 
