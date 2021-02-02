@@ -57,6 +57,7 @@ public:
 	Point(int x, int y);
 //	void operator=(const Point& p);
 	bool operator==(const Point& p);
+	int operator-(const Point& p);
 
 	int x;
 	int y;
@@ -72,6 +73,11 @@ bool Point::operator==(const Point& p)
 	if(p.x == x and p.y == y)
 		return true;
 	return false;
+}
+
+int Point::operator-(const Point& p)
+{
+	return abs(x - p.x)	+ abs(y - p.y);
 }
 
 /*void Point::operator=(const Point &p)
@@ -336,6 +342,8 @@ public:
 	void move_once(Move& direction_1, Move& direction_2, bool& END_GAME);
 	Move determine_direction_move_bot(Snake *snake);
 	bool check_eat_food(Snake *snake);
+	Point find_near_food(Point point);
+	bool check_exist_direction(vector<Move>& candidate, Move direction);
 
 private:
 	vector<Snake*> snakes;
@@ -567,6 +575,7 @@ bool Page::check_eat_food(Snake *snake)
 
 Move Page::determine_direction_move_bot(Snake *snake)
 {
+
 	vector<Move> candidate;
 	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
 	{
@@ -591,10 +600,65 @@ Move Page::determine_direction_move_bot(Snake *snake)
 		candidate.push_back(Move(direction));
 	}
 
+/*
 	if(candidate.size() == 0)
 		return Move(UP);
 	else	
 		return candidate[rand()%candidate.size()];
+*/
+
+	Point near_food = find_near_food(snake->get_head());
+	Point point_snake = snake->get_head();
+	
+	// left
+	if(point_snake.x > near_food.x)
+		if(check_exist_direction(candidate, Move(LEFT)))		
+			return Move(LEFT);
+
+	// right
+	if(point_snake.x < near_food.x)
+		if(check_exist_direction(candidate, Move(RIGHT)))		
+			return Move(RIGHT);
+
+	// up
+	if(point_snake.y > near_food.y)
+		if(check_exist_direction(candidate, Move(UP)))		
+			return Move(UP);
+
+	// down
+	if(point_snake.y < near_food.y)
+		if(check_exist_direction(candidate, Move(DOWN)))		
+			return Move(DOWN);
+
+	if(candidate.size() == 0)
+		return Move(UP);
+	else	
+		return candidate[rand()%candidate.size()];
+}
+
+bool Page::check_exist_direction(vector<Move> &candidate, Move direction)
+{
+	for(int i = 0; i < candidate.size(); i++)
+		if(candidate[i] == direction)
+			return true;
+	return false;
+}
+
+Point Page::find_near_food(Point point)
+{
+	int min_distance = 100000; 
+	int index_min = -1;
+
+	for(int i = 0; i < foods.size(); i++)
+	{
+		int distance = point - foods[i]->get_point();
+		if(distance < min_distance)
+		{
+			min_distance = distance;	
+			index_min = i;
+		}	
+	}
+	return foods[index_min]->get_point();
 }
 
 void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
@@ -728,6 +792,47 @@ int main()
 	vector<Snake*> snakes;
 	vector<Food*> foods;
 
+	Snake B1(Point(15, 8), 5, "BOT 1", 'o', MAGENTA, BOT);
+	Snake S1(Point(3, 3), 5, "PLAYER 1", 'o', BLUE, NOT_BOT);
+
+	snakes.push_back(&B1);
+	snakes.push_back(&S1);
+
+	Food f1(Point(15, 10), 1, '1', BOLDYELLOW);
+	Food f2(Point(10, 10), 3, '3', BOLDYELLOW);
+	Food f3(Point(20, 10), 5, '5', BOLDYELLOW);
+
+	foods.push_back(&f1);
+	foods.push_back(&f2);
+	foods.push_back(&f3);
+
+	
+	// Page setting
+	Page page(snakes, foods);
+
+	while(!END_GAME)
+	{
+        this_thread::sleep_for(chrono::milliseconds(2000));
+		page.move_once(direction_1, direction_2, END_GAME);
+		page.print();	
+	}
+
+
+/*
+	srand(time(0));	
+
+    // Setting
+	bool END_GAME {false};
+	Move direction_1 = LEFT;
+	Move direction_2 = LEFT;
+	int LEVEL = EASY;
+	bool bots = false;
+	bool player1 = false;
+	bool player2 = false;
+
+	vector<Snake*> snakes;
+	vector<Food*> foods;
+
 	Snake B1(Point(22, 3), 5, "BOT 1", 'o', MAGENTA, BOT);
 	Snake B2(Point(13, 3), 5, "BOT 2", 'o', CYAN, BOT);
 	Snake B3(Point(3, 16), 5, "BOT 3", 'o', GREEN, BOT);
@@ -763,7 +868,9 @@ int main()
 	
 	// Page setting
 	Page page(snakes, foods);
-		
+	page.print();
+	page.determine_direction_move_bot(&B1);
+	
 	thread thread_for_read_input(read_input, ref(direction_1), ref(direction_2), ref(END_GAME));
 
 	while(!END_GAME)
@@ -773,4 +880,5 @@ int main()
 		page.print();	
 	}
 	thread_for_read_input.join();
+*/
 }
