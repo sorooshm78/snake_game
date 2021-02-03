@@ -40,14 +40,14 @@
 #define BOT true
 #define NOT_BOT false
 
-enum Move{LEFT, RIGHT, UP, DOWN};
+enum Direction{LEFT, RIGHT, UP, DOWN};
 
 using namespace std;
 
-//class Page;
-//class Food;
-//class Snake;
-//class Point;
+class Page;
+class Food;
+class Snake;
+class Point;
 
 //////////////////////////////////////////////////////////////////
 
@@ -55,7 +55,6 @@ class Point
 {
 public:
 	Point(int x, int y);
-//	void operator=(const Point& p);
 	bool operator==(const Point& p);
 	int operator-(const Point& p);
 
@@ -80,12 +79,6 @@ int Point::operator-(const Point& p)
 	return abs(x - p.x)	+ abs(y - p.y);
 }
 
-/*void Point::operator=(const Point &p)
-{
-	x = p.x;
-	y = p.y;
-}*/
-
 //////////////////////////////////////////////////////////////////
 
 class Food
@@ -100,11 +93,6 @@ public:
 	char get_shape() const { return shape;}
 	int get_val() const { return value;}
 	string get_color() const { return color;}
-	void print()
-	{
-		cout << "x:" << point.x << endl;
-		cout << "y:" << point.y << endl;
-	}
 
 private:	
 	Point point;
@@ -139,14 +127,6 @@ class Snake
 {
 public:
 	Snake(Point point, int size, string name, char shape, string color, bool bot);
-	void print()
-	{
-		for(int i = 0; i < coordinates.size(); i++)
-		{
-			cout << coordinates[i].x << "  " << coordinates[i].y << endl;
-		}
-	}
-
 	bool is_coordinates(Point point) const;
 	void change_x_head(int x) { coordinates[0].x = x; }
 	void change_y_head(int y) {	coordinates[0].y = y; }
@@ -161,20 +141,20 @@ public:
 	string get_color() const {return color;}
 	string get_name() const {return name;}
 	void increase_size(int val);
-	void move(Move direction);
-	Point next_move_coordinates(Move move);
+	void move(Direction direction);
+	Point next_move_coordinates(Direction move);
 	bool is_body(Point point) const;
 	bool check_crash_to_self_body() const;
 
 private:
-	void to_corruct_direction(Move& direction);
-	void add_new_head(Move& direction);
+	void to_corruct_direction(Direction& direction);
+	void add_new_head(Direction& direction);
 	void cut_tail();
 
 	vector<Point> coordinates;
-	Move last_move;
+	Direction last_move;
 	int score;
-	int increase_lenght;
+	int increase_length;
 	const char shape;
 	const string name;
 	const string color;
@@ -184,7 +164,7 @@ private:
 Snake::Snake(Point point, int size, string name, char shape, string color, bool bot)
 :color(color)
 ,name(name)
-,increase_lenght(0)
+,increase_length(0)
 ,shape(shape)
 ,score(0)
 ,last_move(LEFT)
@@ -208,18 +188,18 @@ bool Snake::is_coordinates(Point point) const
 
 void Snake::increase_size(int val)
 {
-	increase_lenght += val;
+	increase_length += val;
 	score += val;
 }
 
-void Snake::move(Move direction)
+void Snake::move(Direction direction)
 {
 	to_corruct_direction(direction);
 	add_new_head(direction);
 	cut_tail();
 }
 
-void Snake::to_corruct_direction(Move& direction)
+void Snake::to_corruct_direction(Direction& direction)
 {
     // RIGHT
     if(direction == LEFT and last_move == RIGHT)
@@ -253,34 +233,18 @@ void Snake::to_corruct_direction(Move& direction)
 
 void Snake::cut_tail()
 {
-	if(increase_lenght == 0)
+	if(increase_length == 0)
 		coordinates.pop_back();
-	else if(increase_lenght != 0)
-		increase_lenght --;
+	else if(increase_length != 0)
+		increase_length --;
 }
 
-void Snake::add_new_head(Move& direction)
+void Snake::add_new_head(Direction& direction)
 {
-	int x_head_snake = get_x_head();
-    int y_head_snake = get_y_head();
-
-//	merge function add new head and next move coordiantes
-//	coordinates.insert(coordinates.begin(), next_move_coordinates(direction));
-
-    if(direction == LEFT)
-        coordinates.insert(coordinates.begin(), Point(x_head_snake - 1, y_head_snake));
-
-    if(direction == RIGHT)
-        coordinates.insert(coordinates.begin(), Point(x_head_snake + 1, y_head_snake));
-
-    if(direction == UP)
-        coordinates.insert(coordinates.begin(), Point(x_head_snake, y_head_snake - 1));
-
-    if(direction == DOWN)
-        coordinates.insert(coordinates.begin(), Point(x_head_snake, y_head_snake + 1));
+	coordinates.insert(coordinates.begin(), next_move_coordinates(direction));
 }
 
-Point Snake::next_move_coordinates(Move direction)
+Point Snake::next_move_coordinates(Direction direction)
 {
 	int x_head_snake = get_x_head();
     int y_head_snake = get_y_head();
@@ -328,7 +292,7 @@ class Page
 public:
 	Page(vector<Snake*> &snakes, vector<Food*> &foods);
 	void print() const;                  
-	int get_lenght() const { return lenght;}
+	int get_length() const { return length;}
 	int get_width() const { return width;}
 	void handle_eat_food(Snake *snake);
 	void insert_new_food(Food *food); 
@@ -339,16 +303,17 @@ public:
 	bool check_crash_to_another_snakes_body(Snake *snake);
 	bool check_crash_to_another_snakes_head(Snake *snake);
 	void check_and_handle_crash_to_another_snakes_head(Snake *snake); 			
-	void move_once(Move& direction_1, Move& direction_2, bool& END_GAME);
-	Move determine_direction_move_bot(Snake *snake);
+	void move_once(Direction& direction_1, Direction& direction_2, bool &end_game);
+	Direction determine_direction_move_bot(Snake *snake);
 	bool check_eat_food(Snake *snake);
 	Point find_near_food(Point point);
-	bool check_exist_direction(vector<Move>& candidate, Move direction);
+	bool check_exist_direction(vector<Direction>& candidate, Direction direction);
+	void find_corruct_direction(Snake *snake, vector<Direction> &candidate);
 
 private:
 	vector<Snake*> snakes;
 	vector<Food*> foods;
-	const int lenght;
+	const int length;
 	const int width;
 	const char margins_shape;
 	const char empty_shape;
@@ -362,14 +327,14 @@ private:
 Page::Page(vector<Snake*>& snakes, vector<Food*>& foods)
 :snakes(snakes)
 ,foods(foods)
-,lenght(30)
+,length(30)
 ,width(20)
 ,margins_shape('#')
 ,empty_shape('.')
 ,margins_up(0)
 ,margins_down(width - 1)
 ,margins_left(0)
-,margins_right(lenght - 1)
+,margins_right(length - 1)
 {
 }	 
 
@@ -382,12 +347,12 @@ void Page::print() const
 
 	for(int y = 0; y < width; y++)
 	{
-		for(int x = 0; x < lenght; x++)
+		for(int x = 0; x < length; x++)
 		{
 			bool print_empty = true;
 
 			// Margins
-			if(x == 0 or y == 0 or x == lenght - 1 or y == width - 1)
+			if(x == 0 or y == 0 or x == length - 1 or y == width - 1)
 			{
 				cout << margins_shape << " ";
 				continue;
@@ -444,7 +409,7 @@ void Page::insert_new_food(Food *food)
 {
 	while(true)
 	{
-		int x_food = rand() % (lenght - 3) + 2;
+		int x_food = rand() % (length - 3) + 2;
 		int y_food = rand() % (width - 3) + 2;
 		
 		if(is_coordinates_snakes(Point(x_food, y_food)))
@@ -527,8 +492,7 @@ bool Page::check_crash_to_another_snakes_head(Snake *snake)
 		if(snakes[i]->get_name() == snake->get_name())
 			continue;
 
-//		if(snakes[i]->get_head() == snake->get_head())
-		if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
+		if(snakes[i]->get_head() == snake->get_head())
 			return true;
 	}
 	return false;
@@ -541,8 +505,7 @@ void Page::check_and_handle_crash_to_another_snakes_head(Snake *snake)
 		if(snakes[i]->get_name() == snake->get_name())
 			continue;
 
-//		if(snakes[i]->get_head() == snake->get_head())
-		if(snakes[i]->get_x_head() == snake->get_x_head() and snakes[i]->get_y_head() == snake->get_y_head())
+		if(snakes[i]->get_head() == snake->get_head())
 		{
 			if(snakes[i]->get_score() == snake->get_score())
 			{
@@ -567,19 +530,15 @@ void Page::check_and_handle_crash_to_another_snakes_head(Snake *snake)
 bool Page::check_eat_food(Snake *snake) 
 {
 	for(int i = 0; i < foods.size(); i++)
-//		if(snake->get_head() == foods[i]->get_point())	
-		if(snake->get_x_head() == foods[i]->get_x() and snake->get_y_head() == foods[i]->get_y())	
+		if(snake->get_head() == foods[i]->get_point())	
 			return true;
 	return false;
 }
-
-Move Page::determine_direction_move_bot(Snake *snake)
+void Page::find_corruct_direction(Snake *snake, vector<Direction> &candidate)
 {
-
-	vector<Move> candidate;
-	for(int direction = Move(LEFT); direction <= Move(DOWN); direction++)
+	for(int direction = Direction(LEFT); direction <= Direction(DOWN); direction++)
 	{
-		Point next = snake->next_move_coordinates(Move(direction));
+		Point next = snake->next_move_coordinates(Direction(direction));
 		Snake s(Point(next.x, next.y), 5, snake->get_name(), '+', RED, BOT);	
 		Snake *virtual_snake = &s;
 
@@ -593,50 +552,47 @@ Move Page::determine_direction_move_bot(Snake *snake)
 
 		if(check_crash_to_another_snakes_head(virtual_snake))
 			continue; 
-		
-		if(check_eat_food(virtual_snake))
-			return Move(direction);
-		
-		candidate.push_back(Move(direction));
-	}
 
-/*
-	if(candidate.size() == 0)
-		return Move(UP);
-	else	
-		return candidate[rand()%candidate.size()];
-*/
+		candidate.push_back(Direction(direction));
+	}
+}
+
+Direction Page::determine_direction_move_bot(Snake *snake)
+{
+
+	vector<Direction> candidate;
+	find_corruct_direction(snake, candidate);
 
 	Point near_food = find_near_food(snake->get_head());
 	Point point_snake = snake->get_head();
 	
 	// left
 	if(point_snake.x > near_food.x)
-		if(check_exist_direction(candidate, Move(LEFT)))		
-			return Move(LEFT);
+		if(check_exist_direction(candidate, Direction(LEFT)))		
+			return Direction(LEFT);
 
 	// right
 	if(point_snake.x < near_food.x)
-		if(check_exist_direction(candidate, Move(RIGHT)))		
-			return Move(RIGHT);
+		if(check_exist_direction(candidate, Direction(RIGHT)))		
+			return Direction(RIGHT);
 
 	// up
 	if(point_snake.y > near_food.y)
-		if(check_exist_direction(candidate, Move(UP)))		
-			return Move(UP);
+		if(check_exist_direction(candidate, Direction(UP)))		
+			return Direction(UP);
 
 	// down
 	if(point_snake.y < near_food.y)
-		if(check_exist_direction(candidate, Move(DOWN)))		
-			return Move(DOWN);
+		if(check_exist_direction(candidate, Direction(DOWN)))		
+			return Direction(DOWN);
 
 	if(candidate.size() == 0)
-		return Move(UP);
+		return Direction(UP);
 	else	
 		return candidate[rand()%candidate.size()];
 }
 
-bool Page::check_exist_direction(vector<Move> &candidate, Move direction)
+bool Page::check_exist_direction(vector<Direction> &candidate, Direction direction)
 {
 	for(int i = 0; i < candidate.size(); i++)
 		if(candidate[i] == direction)
@@ -661,7 +617,7 @@ Point Page::find_near_food(Point point)
 	return foods[index_min]->get_point();
 }
 
-void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
+void Page::move_once(Direction& direction_1, Direction& direction_2, bool &end_game)
 {
 	for(int i = 0; i < snakes.size(); i++)
 	{
@@ -696,12 +652,12 @@ void Page::move_once(Move& direction_1, Move& direction_2, bool& END_GAME)
 		check_and_handle_crash_to_another_snakes_head(snakes[i]);
 	}
 
-	check_end_game(END_GAME);
+	check_end_game(end_game);
 }
 
 //////////////////////////////////////////////////////////////////
 
-void change_direction_move(Move& direction, char input_direction)
+void change_direction_move(Direction& direction, char input_direction)
 {
     if(input_direction == KEY_UP or input_direction == 'w')
         direction = UP;
@@ -716,7 +672,7 @@ void change_direction_move(Move& direction, char input_direction)
         direction = RIGHT;
 }
 
-void read_input(Move& direction_1, Move& direction_2, bool& END_GAME)
+void read_input(Direction& direction_1, Direction& direction_2, bool& END_GAME)
 {
     while(!END_GAME)
     {
@@ -781,50 +737,9 @@ int main()
 	srand(time(0));	
 
     // Setting
-	bool END_GAME {false};
-	Move direction_1 = LEFT;
-	Move direction_2 = LEFT;
-	int LEVEL = EASY;
-	bool bots = false;
-	bool player1 = false;
-	bool player2 = false;
-
-	vector<Snake*> snakes;
-	vector<Food*> foods;
-
-	Snake B1(Point(15, 8), 5, "BOT 1", 'o', MAGENTA, BOT);
-	Snake S1(Point(3, 3), 5, "PLAYER 1", 'o', BLUE, NOT_BOT);
-
-	snakes.push_back(&B1);
-	snakes.push_back(&S1);
-
-	Food f1(Point(15, 10), 1, '1', BOLDYELLOW);
-	Food f2(Point(10, 10), 3, '3', BOLDYELLOW);
-	Food f3(Point(20, 10), 5, '5', BOLDYELLOW);
-
-	foods.push_back(&f1);
-	foods.push_back(&f2);
-	foods.push_back(&f3);
-
-	
-	// Page setting
-	Page page(snakes, foods);
-
-	while(!END_GAME)
-	{
-        this_thread::sleep_for(chrono::milliseconds(2000));
-		page.move_once(direction_1, direction_2, END_GAME);
-		page.print();	
-	}
-
-
-/*
-	srand(time(0));	
-
-    // Setting
-	bool END_GAME {false};
-	Move direction_1 = LEFT;
-	Move direction_2 = LEFT;
+	bool END_GAME = false;
+	Direction direction_1 = LEFT;
+	Direction direction_2 = LEFT;
 	int LEVEL = EASY;
 	bool bots = false;
 	bool player1 = false;
@@ -869,7 +784,6 @@ int main()
 	// Page setting
 	Page page(snakes, foods);
 	page.print();
-	page.determine_direction_move_bot(&B1);
 	
 	thread thread_for_read_input(read_input, ref(direction_1), ref(direction_2), ref(END_GAME));
 
@@ -880,5 +794,5 @@ int main()
 		page.print();	
 	}
 	thread_for_read_input.join();
-*/
+
 }
